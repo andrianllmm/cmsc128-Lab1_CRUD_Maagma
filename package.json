@@ -1,0 +1,26 @@
+{
+  "name": "cmsc128-lab1-crud",
+  "private": true,
+  "version": "1.0.0",
+  "packageManager": "pnpm@11.24.0",
+  "scripts": {
+    "preinstall": "npx only-allow pnpm",
+    "prepare": "husky",
+    "dev": "pnpm -r --parallel dev",
+    "dev:backend": "pnpm --filter backend dev",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "lint": "pnpm -r lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^17.5.0",
+    "oxlint": "^1.82.0",
+    "prettier": "^3.9.6"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": "oxlint --fix",
+    "*": "prettier --write --ignore-unknown"
+  }
+}
