@@ -28,7 +28,8 @@ export function TaskDeleteConfirmDialog({
           <Button
             type="button"
             variant="ghost"
-            size="icon-sm"
+            size="icon"
+            className="hover:text-destructive"
             aria-label={`Delete "${taskTitle}"`}
           />
         }
