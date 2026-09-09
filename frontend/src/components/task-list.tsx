@@ -7,6 +7,7 @@ interface TaskListProps {
   tasks: Task[];
   loading: boolean;
   error: string | null;
+  hasActiveFilters: boolean;
   onEdit: (id: string, data: UpdateTaskInput) => Promise<boolean>;
   onDelete: (id: string) => Promise<boolean>;
 }
@@ -15,6 +16,7 @@ export function TaskList({
   tasks,
   loading,
   error,
+  hasActiveFilters,
   onEdit,
   onDelete,
 }: TaskListProps) {
@@ -27,7 +29,7 @@ export function TaskList({
   }
 
   if (tasks.length === 0) {
-    return <TaskListEmpty />;
+    return <TaskListEmpty hasActiveFilters={hasActiveFilters} />;
   }
 
   return (
@@ -53,8 +55,12 @@ function TaskListSkeleton({ count = 10 }: { count?: number }) {
   );
 }
 
-function TaskListEmpty() {
-  return <div className="text-center">No tasks</div>;
+function TaskListEmpty({ hasActiveFilters }: { hasActiveFilters: boolean }) {
+  return (
+    <div className="text-center">
+      {hasActiveFilters ? "No tasks match your filters" : "No tasks"}
+    </div>
+  );
 }
 
 function TaskListError({ message }: { message: string }) {
