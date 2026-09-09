@@ -1,4 +1,4 @@
-# CRUD To-Do List
+# CRUD To-Do List - CMSC 128 Lab
 
 A to-do list app with create, read, update, and delete operations.
 
