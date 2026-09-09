@@ -1,0 +1,5 @@
+export const PRIORITIES = ["Low", "Medium", "High", "None"] as const;
+export const TAGS = ["Work", "School", "Personal", "Others"] as const;
+
+export type Priority = (typeof PRIORITIES)[number];
+export type Tag = (typeof TAGS)[number];
