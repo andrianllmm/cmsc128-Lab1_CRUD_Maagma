@@ -60,10 +60,12 @@ export function TaskItem({ task, onEdit, onDelete }: TaskItemProps) {
 
           {/* Delete button */}
           <CardAction>
-            <TaskDeleteConfirmDialog
-              taskTitle={task.title}
-              onConfirm={() => onDelete(task._id)}
-            />
+            <div onClick={(e) => e.stopPropagation()}>
+              <TaskDeleteConfirmDialog
+                taskTitle={task.title}
+                onConfirm={() => onDelete(task._id)}
+              />
+            </div>
           </CardAction>
         </CardHeader>
 
