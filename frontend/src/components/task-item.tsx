@@ -36,7 +36,7 @@ export function TaskItem({ task, onEdit, onDelete }: TaskItemProps) {
       <Card
         role="button"
         onClick={() => setOpen(true)}
-        className="cursor-pointer transition-colors hover:bg-muted"
+        className="cursor-pointer transition-colors hover:bg-muted/50"
       >
         <CardHeader>
           <div className="flex items-center gap-2">
@@ -60,10 +60,12 @@ export function TaskItem({ task, onEdit, onDelete }: TaskItemProps) {
 
           {/* Delete button */}
           <CardAction>
-            <TaskDeleteConfirmDialog
-              taskTitle={task.title}
-              onConfirm={() => onDelete(task._id)}
-            />
+            <div onClick={(e) => e.stopPropagation()}>
+              <TaskDeleteConfirmDialog
+                taskTitle={task.title}
+                onConfirm={() => onDelete(task._id)}
+              />
+            </div>
           </CardAction>
         </CardHeader>
 

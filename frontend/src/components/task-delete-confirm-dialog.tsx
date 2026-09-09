@@ -28,9 +28,9 @@ export function TaskDeleteConfirmDialog({
           <Button
             type="button"
             variant="ghost"
-            size="icon-sm"
+            size="icon"
+            className="hover:text-destructive"
             aria-label={`Delete "${taskTitle}"`}
-            onClick={(e) => e.stopPropagation()}
           />
         }
       >
@@ -46,16 +46,8 @@ export function TaskDeleteConfirmDialog({
         </AlertDialogHeader>
 
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={(e) => e.stopPropagation()}>
-            Cancel
-          </AlertDialogCancel>
-          <AlertDialogAction
-            variant="destructive"
-            onClick={(e) => {
-              e.stopPropagation();
-              onConfirm();
-            }}
-          >
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction variant="destructive" onClick={onConfirm}>
             Delete
           </AlertDialogAction>
         </AlertDialogFooter>
