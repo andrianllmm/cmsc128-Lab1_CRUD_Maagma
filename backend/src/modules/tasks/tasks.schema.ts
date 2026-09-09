@@ -8,7 +8,7 @@ export const taskIdSchema = z.object({
 
 export const createTaskSchema = z.object({
   title: z.string().trim().min(1, "Title is required"),
-  dueDate: z.exactOptional(z.coerce.date()),
+  dueDate: z.exactOptional(z.coerce.date().nullable()),
   priority: z.exactOptional(z.enum(PRIORITIES)),
   tag: z.exactOptional(z.enum(TAGS)),
 });
