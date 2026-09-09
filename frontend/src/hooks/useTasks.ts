@@ -19,7 +19,9 @@ export function useTasks() {
   async function fetchTasks(options?: { silent?: boolean }) {
     if (!options?.silent) setLoading(true);
     try {
-      setTasks(await tasksApi.getTasks());
+      const fetched = await tasksApi.getTasks();
+      // Hide pending deletes
+      setTasks(fetched.filter((t) => !pendingDeletes.current.has(t._id)));
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load tasks");
