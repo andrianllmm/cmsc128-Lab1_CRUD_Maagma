@@ -10,8 +10,8 @@ import {
 
 interface TagSelectProps {
   id?: string;
-  value: string | undefined;
-  onValueChange: (value: string | undefined) => void;
+  value: Tag | undefined;
+  onValueChange: (value: Tag | undefined) => void;
 }
 
 export function TagSelect({ id, value, onValueChange }: TagSelectProps) {

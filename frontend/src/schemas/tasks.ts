@@ -11,7 +11,7 @@ export const createTaskSchema = z.object({
       `Title must be at most ${TITLE_MAX_LENGTH} characters`,
     ),
   dueDate: z.exactOptional(
-    z.coerce.date({ error: "Enter a valid due date" }).nullable(),
+    z.coerce.date<Date>({ error: "Enter a valid due date" }).nullable(),
   ),
   priority: z.exactOptional(
     z.enum(PRIORITIES, { error: "Select a valid priority" }),
