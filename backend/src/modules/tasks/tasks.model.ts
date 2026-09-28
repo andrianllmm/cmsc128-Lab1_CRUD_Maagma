@@ -1,11 +1,12 @@
 import { Schema, model, type InferSchemaType } from "mongoose";
-import { PRIORITIES, TAGS } from "./tasks.constants.js";
+import { PRIORITIES, TAGS, TITLE_MAX_LENGTH } from "./tasks.constants.js";
 
 const taskSchema = new Schema(
   {
     title: {
       type: String,
       required: true,
+      maxlength: TITLE_MAX_LENGTH,
     },
     dueDate: {
       type: Date,
