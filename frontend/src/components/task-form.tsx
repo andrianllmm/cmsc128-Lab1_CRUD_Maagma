@@ -3,7 +3,7 @@ import { createTaskSchema, type CreateTaskInput } from "@/schemas/tasks";
 import type { Task } from "@/types/tasks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DatePicker } from "@/components/ui/date-picker";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { FormField } from "@/components/ui/form-field";
 import { PrioritySelect } from "@/components/priority-select";
 import { TagSelect } from "@/components/tag-select";
@@ -78,7 +78,7 @@ export function TaskForm({
           hideLabel
           className="flex-1"
         >
-          <DatePicker
+          <DateTimePicker
             id="dueDate"
             selected={dueDate}
             onSelect={setDueDate}
