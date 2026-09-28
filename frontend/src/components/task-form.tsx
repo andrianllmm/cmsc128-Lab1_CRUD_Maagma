@@ -59,7 +59,7 @@ export function TaskForm({
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       {/* Title */}
-      <FormField htmlFor="title" label="Title" error={errors.title} hideLabel>
+      <FormField htmlFor="title" label="Title" error={errors.title}>
         <Input
           id="title"
           placeholder="What do you want to do?"
@@ -75,7 +75,6 @@ export function TaskForm({
           htmlFor="dueDate"
           label="Due date"
           error={errors.dueDate}
-          hideLabel
           className="flex-1"
         >
           <DateTimePicker
@@ -88,12 +87,7 @@ export function TaskForm({
         </FormField>
 
         {/* Priority */}
-        <FormField
-          htmlFor="priority"
-          label="Priority"
-          error={errors.priority}
-          hideLabel
-        >
+        <FormField htmlFor="priority" label="Priority" error={errors.priority}>
           <PrioritySelect
             id="priority"
             value={priority}
@@ -102,7 +96,7 @@ export function TaskForm({
         </FormField>
 
         {/* Tag */}
-        <FormField htmlFor="tag" label="Tag" error={errors.tag} hideLabel>
+        <FormField htmlFor="tag" label="Tag" error={errors.tag}>
           <TagSelect id="tag" value={tag} onValueChange={setTag} />
         </FormField>
       </div>
