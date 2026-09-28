@@ -18,7 +18,7 @@ const updateTask = async (
   data: UpdateTaskInput,
 ): Promise<Task | null> => {
   return TaskModel.findByIdAndUpdate(id, data, {
-    new: true,
+    returnDocument: "after",
     runValidators: true,
   });
 };
