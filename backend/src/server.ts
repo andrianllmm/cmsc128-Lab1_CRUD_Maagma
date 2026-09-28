@@ -6,6 +6,7 @@ import swaggerUi from "swagger-ui-express";
 import { connectDB } from "./config/db.js";
 import { env } from "./config/env.js";
 import { swaggerSpec } from "./config/swagger.js";
+import { errorHandler, notFound } from "./middleware/error.js";
 
 import { taskRouter } from "./modules/tasks/tasks.router.js";
 
@@ -35,6 +36,9 @@ app.get("/api/health", (_req, res) => {
     db: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
   });
 });
+
+app.use(notFound);
+app.use(errorHandler);
 
 async function start() {
   await connectDB();
