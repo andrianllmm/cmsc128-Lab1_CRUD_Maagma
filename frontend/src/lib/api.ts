@@ -29,7 +29,9 @@ export async function apiFetch<T>(
 
   if (!res.ok) {
     const body = await res.json().catch(() => null);
-    throw new ApiError(res.status, body?.message ?? res.statusText);
+    const message =
+      typeof body?.message === "string" ? body.message : res.statusText;
+    throw new ApiError(res.status, message);
   }
 
   return res.json();
