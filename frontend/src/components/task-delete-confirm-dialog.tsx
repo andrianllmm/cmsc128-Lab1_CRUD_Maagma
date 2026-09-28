@@ -41,7 +41,7 @@ export function TaskDeleteConfirmDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete "{taskTitle}"?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone.
+            You can undo this for a few seconds after deleting.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
