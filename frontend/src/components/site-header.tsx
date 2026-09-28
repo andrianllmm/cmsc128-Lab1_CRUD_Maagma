@@ -16,7 +16,7 @@ export function SiteHeader() {
             nativeButton={false}
           >
             <ListTodoIcon />
-            To-Do List
+            TODO
           </Button>
         </h1>
 
