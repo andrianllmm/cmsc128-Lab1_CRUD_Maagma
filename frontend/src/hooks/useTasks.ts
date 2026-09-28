@@ -1,119 +1,137 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
+import {
+  queryOptions,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { toast } from "sonner";
-import type { Task } from "@/types/tasks";
 import type { CreateTaskInput, UpdateTaskInput } from "@/schemas/tasks";
 import * as tasksApi from "@/api/tasks";
 
+export const tasksQueryOptions = queryOptions({
+  queryKey: ["tasks"],
+  queryFn: tasksApi.getTasks,
+});
+
 export function useTasks() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  // Tasks removed from the list but not yet deleted server-side
-  const pendingDeletes = useRef(new Map<string, Task>());
+  // Tasks hidden from the list but not yet deleted server-side
+  const [pendingDeletes, setPendingDeletes] = useState<ReadonlySet<string>>(
+    new Set(),
+  );
 
-  useEffect(() => {
-    fetchTasks();
-  }, []);
+  const { data, isPending, error } = useQuery({
+    ...tasksQueryOptions,
+    // Hide pending deletes
+    select: (tasks) => tasks.filter((t) => !pendingDeletes.has(t._id)),
+  });
 
-  async function fetchTasks(options?: { silent?: boolean }) {
-    if (!options?.silent) setLoading(true);
-    try {
-      const fetched = await tasksApi.getTasks();
-      // Hide pending deletes
-      setTasks(fetched.filter((t) => !pendingDeletes.current.has(t._id)));
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load tasks");
-    } finally {
-      if (!options?.silent) setLoading(false);
-    }
+  const invalidateTasks = () =>
+    queryClient.invalidateQueries({ queryKey: tasksQueryOptions.queryKey });
+
+  const createMutation = useMutation({
+    mutationFn: tasksApi.createTask,
+    onSuccess: invalidateTasks,
+    onError: (err) => toast.error(err.message || "Failed to create task"),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateTaskInput }) =>
+      tasksApi.updateTask(id, data),
+    onSuccess: invalidateTasks,
+    onError: (err) => toast.error(err.message || "Failed to update task"),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: tasksApi.deleteTask,
+    onSuccess: (_, id) => {
+      // Drop the task from the cache before it stops being hidden
+      queryClient.setQueryData(tasksQueryOptions.queryKey, (tasks) =>
+        tasks?.filter((t) => t._id !== id),
+      );
+    },
+    onError: (err) => toast.error(err.message || "Failed to delete task"),
+    // On error, un-hiding restores the task
+    onSettled: (_, __, id) => unhide(id),
+  });
+
+  function hide(id: string) {
+    setPendingDeletes((ids) => new Set(ids).add(id));
+  }
+
+  function unhide(id: string) {
+    setPendingDeletes((ids) => {
+      const next = new Set(ids);
+      next.delete(id);
+      return next;
+    });
   }
 
   async function createTask(data: CreateTaskInput) {
     try {
-      await tasksApi.createTask(data);
-      await fetchTasks({ silent: true });
+      await createMutation.mutateAsync(data);
       return true;
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to create task");
+    } catch {
       return false;
     }
   }
 
   async function updateTask(id: string, data: UpdateTaskInput) {
     try {
-      await tasksApi.updateTask(id, data);
-      await fetchTasks({ silent: true });
+      await updateMutation.mutateAsync({ id, data });
       return true;
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to update task");
+    } catch {
       return false;
     }
   }
 
   async function deleteTask(id: string) {
     // Find task to delete
-    const taskToDelete = tasks.find((t) => t._id === id);
+    const taskToDelete = data?.find((t) => t._id === id);
     if (!taskToDelete) return false;
 
-    // Remove task from state and stash it in case of undo
-    setTasks((tasks) => tasks.filter((t) => t._id !== id));
-    pendingDeletes.current.set(id, taskToDelete);
+    // Hide task from the list; it stays in the cache in case of undo
+    hide(id);
+
+    // Ensures only one of undo or delete runs
+    let settled = false;
 
     // The actual delete only happens once the toast goes away
+    function finalizeDelete() {
+      if (settled) return;
+      settled = true;
+      deleteMutation.mutate(id);
+    }
+
+    // Task was never actually deleted server-side so just un-hide it
+    function undoDelete() {
+      if (settled) return;
+      settled = true;
+      unhide(id);
+    }
+
     toast(`Deleted "${taskToDelete.title}"`, {
       duration: 5000,
       action: {
         label: "Undo",
-        onClick: () => undoDeleteTask(id),
+        onClick: undoDelete,
       },
-      onDismiss: () => finalizeDelete(id),
-      onAutoClose: () => finalizeDelete(id),
+      onDismiss: finalizeDelete,
+      onAutoClose: finalizeDelete,
     });
 
     return true;
   }
 
-  async function finalizeDelete(id: string) {
-    const task = pendingDeletes.current.get(id);
-    if (!task) return;
-    pendingDeletes.current.delete(id);
-
-    try {
-      await tasksApi.deleteTask(id);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to delete task");
-      restoreTask(task);
-    }
-  }
-
-  function undoDeleteTask(id: string) {
-    const task = pendingDeletes.current.get(id);
-    if (!task) return;
-    pendingDeletes.current.delete(id);
-
-    // Task was never actually deleted server-side so just put it back.
-    restoreTask(task);
-  }
-
-  function restoreTask(task: Task) {
-    // Insert task back into state
-    setTasks((tasks) =>
-      [...tasks, task].sort(
-        (a, b) =>
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-      ),
-    );
-  }
-
   return {
-    tasks,
-    loading,
-    error,
+    tasks: data ?? [],
+    loading: isPending,
+    // Keep showing cached tasks if only a background refetch failed
+    error: data ? null : (error?.message ?? null),
     createTask,
     updateTask,
     deleteTask,
-    undoDeleteTask,
   };
 }
