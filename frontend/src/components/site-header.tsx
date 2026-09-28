@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ListTodoIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 
 export function SiteHeader() {
   return (
@@ -18,6 +19,8 @@ export function SiteHeader() {
             To-Do List
           </Button>
         </h1>
+
+        <ThemeSwitcher />
       </div>
     </header>
   );
