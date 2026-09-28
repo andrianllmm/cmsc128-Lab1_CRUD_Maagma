@@ -10,8 +10,8 @@ import {
 
 interface PrioritySelectProps {
   id?: string;
-  value: string | undefined;
-  onValueChange: (value: string | undefined) => void;
+  value: Priority | undefined;
+  onValueChange: (value: Priority | undefined) => void;
 }
 
 export function PrioritySelect({

@@ -1,4 +1,6 @@
-import { useState, type SubmitEvent } from "react";
+import { useForm } from "@tanstack/react-form";
+import type { z } from "zod";
+import { Loader2Icon } from "lucide-react";
 import { createTaskSchema, type CreateTaskInput } from "@/schemas/tasks";
 import type { Task } from "@/types/tasks";
 import { Button } from "@/components/ui/button";
@@ -14,102 +16,127 @@ interface TaskFormProps {
   onSubmit: (data: CreateTaskInput) => Promise<boolean>;
 }
 
+type TaskFormValues = z.input<typeof createTaskSchema>;
+
 export function TaskForm({
   task,
   submitLabel = "Create",
   onSubmit,
 }: TaskFormProps) {
-  // Form fields
-  const [title, setTitle] = useState(task?.title ?? "");
-  const [dueDate, setDueDate] = useState<Date | undefined>(
-    task?.dueDate ? new Date(task.dueDate) : undefined,
-  );
-  const [priority, setPriority] = useState<string | undefined>(
-    task?.priority ?? "None",
-  );
-  const [tag, setTag] = useState<string | undefined>(task?.tag ?? "Others");
+  const defaultValues: TaskFormValues = {
+    title: task?.title ?? "",
+    dueDate: task?.dueDate ? new Date(task.dueDate) : null,
+    priority: task?.priority ?? "None",
+    tag: task?.tag ?? "Others",
+  };
 
-  // Errors
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const form = useForm({
+    defaultValues,
+    validators: {
+      onSubmit: createTaskSchema,
+    },
+    onSubmit: async ({ value, formApi }) => {
+      // Validators don't transform values, so parse to get the schema output
+      const ok = await onSubmit(createTaskSchema.parse(value));
 
-  async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
-    e.preventDefault();
-
-    // Validate form
-    const result = createTaskSchema.safeParse({
-      title,
-      dueDate: dueDate ?? null,
-      priority,
-      tag,
-    });
-
-    if (!result.success) {
-      setErrors(
-        Object.fromEntries(
-          result.error.issues.map((issue) => [issue.path[0], issue.message]),
-        ),
-      );
-      return;
-    }
-
-    setErrors({});
-    const ok = await onSubmit(result.data);
-
-    // Clear the create form after a successful submit
-    if (ok && !task) {
-      setTitle("");
-      setDueDate(undefined);
-      setPriority("None");
-      setTag("Others");
-    }
-  }
+      // Clear the create form after a successful submit
+      if (ok && !task) formApi.reset();
+    },
+  });
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        form.handleSubmit();
+      }}
+      className="flex flex-col gap-4"
+    >
       {/* Title */}
-      <FormField htmlFor="title" label="Title" error={errors.title}>
-        <Input
-          id="title"
-          placeholder="What do you want to do?"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          autoFocus={!task}
-        />
-      </FormField>
+      <form.Field name="title">
+        {(field) => (
+          <FormField
+            htmlFor="title"
+            label="Title"
+            error={field.state.meta.errors[0]?.message}
+          >
+            <Input
+              id="title"
+              placeholder="What do you want to do?"
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(e) => field.handleChange(e.target.value)}
+              autoFocus={!task}
+            />
+          </FormField>
+        )}
+      </form.Field>
 
       <div className="flex gap-2">
         {/* Due date */}
-        <FormField
-          htmlFor="dueDate"
-          label="Due date"
-          error={errors.dueDate}
-          className="flex-1"
-        >
-          <DateTimePicker
-            id="dueDate"
-            selected={dueDate}
-            onSelect={setDueDate}
-            placeholder="No due date"
-            className="w-full"
-          />
-        </FormField>
+        <form.Field name="dueDate">
+          {(field) => (
+            <FormField
+              htmlFor="dueDate"
+              label="Due date"
+              error={field.state.meta.errors[0]?.message}
+              className="flex-1"
+            >
+              <DateTimePicker
+                id="dueDate"
+                selected={field.state.value ?? undefined}
+                onSelect={(date) => field.handleChange(date ?? null)}
+                placeholder="No due date"
+                className="w-full"
+              />
+            </FormField>
+          )}
+        </form.Field>
 
         {/* Priority */}
-        <FormField htmlFor="priority" label="Priority" error={errors.priority}>
-          <PrioritySelect
-            id="priority"
-            value={priority}
-            onValueChange={setPriority}
-          />
-        </FormField>
+        <form.Field name="priority">
+          {(field) => (
+            <FormField
+              htmlFor="priority"
+              label="Priority"
+              error={field.state.meta.errors[0]?.message}
+            >
+              <PrioritySelect
+                id="priority"
+                value={field.state.value}
+                onValueChange={field.handleChange}
+              />
+            </FormField>
+          )}
+        </form.Field>
 
         {/* Tag */}
-        <FormField htmlFor="tag" label="Tag" error={errors.tag}>
-          <TagSelect id="tag" value={tag} onValueChange={setTag} />
-        </FormField>
+        <form.Field name="tag">
+          {(field) => (
+            <FormField
+              htmlFor="tag"
+              label="Tag"
+              error={field.state.meta.errors[0]?.message}
+            >
+              <TagSelect
+                id="tag"
+                value={field.state.value}
+                onValueChange={field.handleChange}
+              />
+            </FormField>
+          )}
+        </form.Field>
       </div>
 
-      <Button type="submit">{submitLabel}</Button>
+      <form.Subscribe selector={(state) => state.isSubmitting}>
+        {(isSubmitting) => (
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting && <Loader2Icon className="animate-spin" />}
+            {submitLabel}
+          </Button>
+        )}
+      </form.Subscribe>
     </form>
   );
 }
