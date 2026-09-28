@@ -12,9 +12,9 @@ import { taskRouter } from "./modules/tasks/tasks.router.js";
 
 const app = express();
 
+app.use(morgan(env.NODE_ENV === "production" ? "tiny" : "dev"));
 app.use(cors({ origin: env.CORS_ORIGIN }));
 app.use(express.json());
-app.use(morgan(env.NODE_ENV === "production" ? "tiny" : "dev"));
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
