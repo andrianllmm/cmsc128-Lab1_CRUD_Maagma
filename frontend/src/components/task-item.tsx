@@ -97,6 +97,7 @@ export function TaskItem({ task, onEdit, onDelete }: TaskItemProps) {
           onSubmit={async (data) => {
             const ok = await onEdit(task._id, data);
             if (ok) setOpen(false);
+            return ok;
           }}
         />
       </DialogContent>

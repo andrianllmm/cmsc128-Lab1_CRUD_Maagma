@@ -11,7 +11,7 @@ import { TagSelect } from "@/components/tag-select";
 interface TaskFormProps {
   task?: Task;
   submitLabel?: string;
-  onSubmit: (data: CreateTaskInput) => unknown;
+  onSubmit: (data: CreateTaskInput) => Promise<boolean>;
 }
 
 export function TaskForm({
@@ -32,7 +32,7 @@ export function TaskForm({
   // Errors
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
+  async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
 
     // Validate form
@@ -53,7 +53,15 @@ export function TaskForm({
     }
 
     setErrors({});
-    onSubmit(result.data);
+    const ok = await onSubmit(result.data);
+
+    // Clear the create form after a successful submit
+    if (ok && !task) {
+      setTitle("");
+      setDueDate(undefined);
+      setPriority("None");
+      setTag("Others");
+    }
   }
 
   return (
