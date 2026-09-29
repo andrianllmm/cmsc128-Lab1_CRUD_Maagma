@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { useForm } from "@tanstack/react-form";
 import type { z } from "zod";
 import { Loader2Icon } from "lucide-react";
@@ -23,6 +24,9 @@ export function TaskForm({
   submitLabel = "Create",
   onSubmit,
 }: TaskFormProps) {
+  // Unique per instance since create and edit forms can coexist
+  const id = useId();
+
   const defaultValues: TaskFormValues = {
     title: task?.title ?? "",
     dueDate: task?.dueDate ? new Date(task.dueDate) : null,
@@ -57,12 +61,12 @@ export function TaskForm({
       <form.Field name="title">
         {(field) => (
           <FormField
-            htmlFor="title"
+            htmlFor={`${id}-title`}
             label="Title"
             error={field.state.meta.errors[0]?.message}
           >
             <Input
-              id="title"
+              id={`${id}-title`}
               placeholder="What do you want to do?"
               value={field.state.value}
               onBlur={field.handleBlur}
@@ -78,13 +82,13 @@ export function TaskForm({
         <form.Field name="dueDate">
           {(field) => (
             <FormField
-              htmlFor="dueDate"
+              htmlFor={`${id}-dueDate`}
               label="Due date"
               error={field.state.meta.errors[0]?.message}
               className="flex-1"
             >
               <DateTimePicker
-                id="dueDate"
+                id={`${id}-dueDate`}
                 selected={field.state.value ?? undefined}
                 onSelect={(date) => field.handleChange(date ?? null)}
                 placeholder="No due date"
@@ -98,12 +102,12 @@ export function TaskForm({
         <form.Field name="priority">
           {(field) => (
             <FormField
-              htmlFor="priority"
+              htmlFor={`${id}-priority`}
               label="Priority"
               error={field.state.meta.errors[0]?.message}
             >
               <PrioritySelect
-                id="priority"
+                id={`${id}-priority`}
                 value={field.state.value}
                 onValueChange={field.handleChange}
               />
@@ -115,12 +119,12 @@ export function TaskForm({
         <form.Field name="tag">
           {(field) => (
             <FormField
-              htmlFor="tag"
+              htmlFor={`${id}-tag`}
               label="Tag"
               error={field.state.meta.errors[0]?.message}
             >
               <TagSelect
-                id="tag"
+                id={`${id}-tag`}
                 value={field.state.value}
                 onValueChange={field.handleChange}
               />
