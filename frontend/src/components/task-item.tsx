@@ -36,7 +36,7 @@ export function TaskItem({ task, onEdit, onDelete }: TaskItemProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <Card className="relative transition-colors hover:bg-muted/50">
         <CardHeader>
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2">
             {/* Toggle mark as done */}
             <Checkbox
               aria-label={task.done ? "Mark as not done" : "Mark as done"}
@@ -49,7 +49,10 @@ export function TaskItem({ task, onEdit, onDelete }: TaskItemProps) {
 
             {/* Title; its overlay makes the whole card open the edit dialog */}
             <CardTitle
-              className={cn(task.done && "text-muted-foreground line-through")}
+              className={cn(
+                "min-w-0 wrap-anywhere",
+                task.done && "text-muted-foreground line-through",
+              )}
             >
               <DialogTrigger className="cursor-pointer text-left outline-none after:absolute after:inset-0 after:rounded-xl focus-visible:after:ring-2 focus-visible:after:ring-ring/50">
                 {task.title}
