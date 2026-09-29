@@ -14,6 +14,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PriorityBadge } from "@/components/priority-badge";
@@ -33,39 +34,35 @@ export function TaskItem({ task, onEdit, onDelete }: TaskItemProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <Card
-        role="button"
-        onClick={() => setOpen(true)}
-        className="cursor-pointer transition-colors hover:bg-muted/50"
-      >
+      <Card className="relative transition-colors hover:bg-muted/50">
         <CardHeader>
           <div className="flex items-center gap-2">
             {/* Toggle mark as done */}
             <Checkbox
               aria-label={task.done ? "Mark as not done" : "Mark as done"}
               checked={task.done}
-              onClick={(e) => e.stopPropagation()}
               onCheckedChange={(checked) =>
                 onEdit(task._id, { done: checked === true })
               }
+              className="relative z-10"
             />
 
-            {/* Title */}
+            {/* Title; its overlay makes the whole card open the edit dialog */}
             <CardTitle
               className={cn(task.done && "text-muted-foreground line-through")}
             >
-              {task.title}
+              <DialogTrigger className="cursor-pointer text-left outline-none after:absolute after:inset-0 after:rounded-xl focus-visible:after:ring-2 focus-visible:after:ring-ring/50">
+                {task.title}
+              </DialogTrigger>
             </CardTitle>
           </div>
 
           {/* Delete button */}
-          <CardAction>
-            <div onClick={(e) => e.stopPropagation()}>
-              <TaskDeleteConfirmDialog
-                taskTitle={task.title}
-                onConfirm={() => onDelete(task._id)}
-              />
-            </div>
+          <CardAction className="relative z-10">
+            <TaskDeleteConfirmDialog
+              taskTitle={task.title}
+              onConfirm={() => onDelete(task._id)}
+            />
           </CardAction>
         </CardHeader>
 
