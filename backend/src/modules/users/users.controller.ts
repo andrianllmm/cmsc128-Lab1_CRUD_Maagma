@@ -57,6 +57,7 @@ const updatePassword = async (
     req.session.userId!,
     req.body.currentPassword,
     req.body.newPassword,
+    req.sessionID,
   );
 
   if (!changed) {

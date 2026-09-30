@@ -55,18 +55,20 @@ const checkPassword = async (
 };
 
 /**
- * Replaces a user's password.
+ * Replaces a user's password and logs out their other sessions.
  * Returns `false` if the current password is wrong.
  * */
 const changePassword = async (
   userId: string,
   currentPassword: string,
   newPassword: string,
+  currentSessionId: string,
 ): Promise<boolean> => {
   if (!(await checkPassword(userId, currentPassword))) return false;
 
   const hashedPassword = await hashPassword(newPassword);
   await userService.updatePasswordHash(userId, hashedPassword);
+  await destroyUserSessions(userId, currentSessionId);
   return true;
 };
 
