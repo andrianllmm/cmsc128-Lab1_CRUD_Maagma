@@ -156,6 +156,6 @@ Example update request body (marking a task done):
 
 ### Task Management
 
-![Task list](docs/images/screenshot.png)
-![Editing a task](docs/images/screenshot-editing.png)
-![Deleting a task](docs/images/screenshot-deleting.png)
+![Task list](docs/images/tasks-list.png)
+![Editing a task](docs/images/tasks-edit.png)
+![Deleting a task](docs/images/tasks-delete.png)
