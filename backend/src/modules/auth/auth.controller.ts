@@ -3,7 +3,12 @@ import type { Request, Response } from "express";
 import { SESSION_COOKIE_NAME } from "../../config/session.js";
 import { authService } from "./auth.service.js";
 import { userService } from "../users/users.service.js";
-import type { RegisterInput, LoginInput } from "./auth.schema.js";
+import type {
+  RegisterInput,
+  LoginInput,
+  ForgotPasswordInput,
+  ResetPasswordInput,
+} from "./auth.schema.js";
 
 const startSession = async (
   req: Request<unknown, unknown, unknown>,
@@ -67,9 +72,41 @@ const me = async (req: Request, res: Response) => {
   res.status(200).json(user);
 };
 
+const forgotPassword = async (
+  req: Request<unknown, unknown, ForgotPasswordInput>,
+  res: Response,
+) => {
+  // Result ignored so the response doesn't reveal whether the email exists
+  await authService.forgotPassword(req.body.email);
+
+  res.status(200).json({
+    message: "If an account uses that email, a reset link has been sent",
+  });
+};
+
+const resetPassword = async (
+  req: Request<unknown, unknown, ResetPasswordInput>,
+  res: Response,
+) => {
+  const reset = await authService.resetPassword(
+    req.body.token,
+    req.body.newPassword,
+  );
+
+  if (!reset) {
+    return res
+      .status(400)
+      .json({ message: "Reset link is invalid or has expired" });
+  }
+
+  res.status(200).json({ message: "Password has been reset" });
+};
+
 export const authController = {
   register,
   login,
   logout,
   me,
+  forgotPassword,
+  resetPassword,
 };
