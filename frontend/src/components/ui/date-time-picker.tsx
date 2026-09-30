@@ -1,6 +1,6 @@
 import { endOfDay, format, set, startOfDay } from "date-fns";
 import { hasTime } from "@/lib/dates";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -134,6 +134,21 @@ export function DateTimePicker({
             </ScrollArea>
           </div>
         </div>
+
+        {time && (
+          <div className="flex justify-end border-t p-2">
+            {/* Clear time; keeps the date */}
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => onSelect(endOfDay(time))}
+            >
+              <XIcon />
+              Clear time
+            </Button>
+          </div>
+        )}
       </PopoverContent>
     </Popover>
   );
