@@ -1,5 +1,10 @@
 import { apiFetch, ApiError } from "@/lib/api";
-import type { RegisterInput, LoginInput } from "@/schemas/auth";
+import type {
+  RegisterInput,
+  LoginInput,
+  ForgotPasswordInput,
+  ResetPasswordInput,
+} from "@/schemas/auth";
 import type { User } from "@/types/users";
 
 export const register = (data: RegisterInput): Promise<User> => {
@@ -31,4 +36,21 @@ export const getMe = async (): Promise<User | null> => {
     if (err instanceof ApiError && err.status === 401) return null;
     throw err;
   }
+};
+
+export const forgotPassword = (data: ForgotPasswordInput): Promise<void> => {
+  return apiFetch<void>("auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+};
+
+export const resetPassword = (
+  token: string,
+  { newPassword }: ResetPasswordInput,
+): Promise<void> => {
+  return apiFetch<void>("auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify({ token, newPassword }),
+  });
 };
