@@ -33,7 +33,7 @@ export function TaskList({
   }
 
   return (
-    <ul aria-label="Tasks" className="flex flex-col gap-3">
+    <ul className="flex flex-col gap-3">
       {tasks.map((task) => (
         <li key={task._id}>
           <TaskItem task={task} onEdit={onEdit} onDelete={onDelete} />
