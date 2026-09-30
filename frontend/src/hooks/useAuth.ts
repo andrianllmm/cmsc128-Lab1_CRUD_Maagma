@@ -4,6 +4,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import type { RegisterInput, LoginInput } from "@/schemas/auth";
 import type { User } from "@/types/users";
@@ -17,6 +18,7 @@ export const meQueryOptions = queryOptions({
 
 export function useAuth() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data: user, isPending } = useQuery(meQueryOptions);
 
@@ -75,12 +77,14 @@ export function useAuth() {
   }
 
   /**
-   * Logs out the current user.
+   * Logs out the current user and goes to the login page.
    * Returns `false` on failure.
    * */
   async function logout(): Promise<boolean> {
     try {
       await logoutMutation.mutateAsync();
+      // Replace so going back doesn't return to a logged-in-only page
+      navigate({ to: "/login", replace: true });
       return true;
     } catch {
       return false;
