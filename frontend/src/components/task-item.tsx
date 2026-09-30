@@ -105,7 +105,7 @@ export function TaskItem({ task, onEdit, onDelete }: TaskItemProps) {
       </Card>
 
       {/* Edit task dialog */}
-      <DialogContent>
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Edit task</DialogTitle>
         </DialogHeader>
