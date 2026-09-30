@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 
 import { authService } from "./auth.service.js";
+import { userService } from "../users/users.service.js";
 import type { RegisterInput, LoginInput } from "./auth.schema.js";
 
 const startSession = async (
@@ -44,7 +45,19 @@ const login = async (
   res.status(200).json(user);
 };
 
+const me = async (req: Request, res: Response) => {
+  const user = await userService.findById(req.session.userId!);
+
+  // Session outlived its user
+  if (!user) {
+    return res.status(401).json({ message: "Not logged in" });
+  }
+
+  res.status(200).json(user);
+};
+
 export const authController = {
   register,
   login,
+  me,
 };

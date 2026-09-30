@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import { authController } from "./auth.controller.js";
+import { requireAuth } from "../../middleware/auth.js";
 import { validateBody } from "../../middleware/validate.js";
 import { loginSchema, registerSchema } from "./auth.schema.js";
 
@@ -71,3 +72,17 @@ authRouter.post(
  *        description: Invalid credentials
  */
 authRouter.post("/login", validateBody(loginSchema), authController.login);
+
+/**
+ * @openapi
+ * /auth/me:
+ *  get:
+ *    summary: Get the logged-in user
+ *    tags: [Auth]
+ *    responses:
+ *      200:
+ *        description: Logged-in user
+ *      401:
+ *        description: Not logged in
+ */
+authRouter.get("/me", requireAuth, authController.me);
