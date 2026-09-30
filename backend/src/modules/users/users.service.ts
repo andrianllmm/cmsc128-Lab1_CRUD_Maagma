@@ -9,6 +9,10 @@ interface CreateUserData {
   passwordHash: string;
 }
 
+const findById = async (id: string): Promise<UserDocument | null> => {
+  return UserModel.findById(id);
+};
+
 const findByEmail = async (email: string): Promise<UserDocument | null> => {
   return UserModel.findOne({ email });
 };
@@ -39,6 +43,7 @@ const createUser = async (
 };
 
 export const userService = {
+  findById,
   findByEmail,
   findByEmailWithPassword,
   createUser,
