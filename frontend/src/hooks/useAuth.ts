@@ -35,6 +35,19 @@ export function useAuth() {
     onError: (err) => toast.error(err.message || "Failed to log in"),
   });
 
+  const logoutMutation = useMutation({
+    mutationFn: authApi.logout,
+    onSuccess: () => {
+      // Route guards read this cached value
+      queryClient.setQueryData(meQueryOptions.queryKey, null);
+      // Drop the previous user's cached data (e.g. tasks)
+      queryClient.removeQueries({
+        predicate: (query) => query.queryKey[0] !== meQueryOptions.queryKey[0],
+      });
+    },
+    onError: (err) => toast.error(err.message || "Failed to log out"),
+  });
+
   /**
    * Creates an account and logs in.
    * Returns `false` on failure (e.g. email already in use).
@@ -61,10 +74,25 @@ export function useAuth() {
     }
   }
 
+  /**
+   * Logs out the current user.
+   * Returns `false` on failure.
+   * */
+  async function logout(): Promise<boolean> {
+    try {
+      await logoutMutation.mutateAsync();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   return {
     user: user ?? null,
     loading: isPending,
     register,
     login,
+    logout,
+    loggingOut: logoutMutation.isPending,
   };
 }

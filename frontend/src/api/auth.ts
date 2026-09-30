@@ -16,6 +16,10 @@ export const login = (data: LoginInput): Promise<User> => {
   });
 };
 
+export const logout = (): Promise<void> => {
+  return apiFetch<void>("auth/logout", { method: "POST" });
+};
+
 /**
  * Gets the logged-in user.
  * Resolves to `null` when not logged in.
