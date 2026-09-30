@@ -4,6 +4,7 @@ import MongoStore from "connect-mongo";
 import { env } from "./env.js";
 
 const SESSION_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+export const SESSION_COOKIE_NAME = "sid";
 
 // Data stored server-side per session
 declare module "express-session" {
@@ -18,7 +19,7 @@ declare module "express-session" {
  * so sessions survive page refreshes and backend restarts, and can be destroyed on logout.
  * */
 export const sessionMiddleware: RequestHandler = session({
-  name: "sid",
+  name: SESSION_COOKIE_NAME,
   secret: env.SESSION_SECRET,
   // Only save sessions that were modified (i.e. after login)
   resave: false,

@@ -75,6 +75,18 @@ authRouter.post("/login", validateBody(loginSchema), authController.login);
 
 /**
  * @openapi
+ * /auth/logout:
+ *  post:
+ *    summary: Log out
+ *    tags: [Auth]
+ *    responses:
+ *      204:
+ *        description: Session destroyed; clears the session cookie
+ */
+authRouter.post("/logout", authController.logout);
+
+/**
+ * @openapi
  * /auth/me:
  *  get:
  *    summary: Get the logged-in user
