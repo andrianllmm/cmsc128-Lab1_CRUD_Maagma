@@ -1,5 +1,7 @@
-import { format, set, startOfToday } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { useState } from "react";
+import { endOfDay, format, set, startOfDay } from "date-fns";
+import { hasTime } from "@/lib/dates";
+import { CalendarIcon, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -31,19 +33,22 @@ export function DateTimePicker({
   placeholder = "No date",
   className,
 }: DateTimePickerProps) {
-  const isPM = selected ? selected.getHours() >= 12 : false;
+  const [open, setOpen] = useState(false);
 
-  // Keep the selected time when picking a new day
+  // Undefined if no date or the date has no time set
+  const time = selected && hasTime(selected) ? selected : undefined;
+  const isPM = time ? time.getHours() >= 12 : false;
+
+  // Keep the selected time when picking a new day; otherwise no time
   function handleDateSelect(day: Date | undefined) {
-    if (!day || !selected) return onSelect(day);
-    onSelect(
-      set(day, { hours: selected.getHours(), minutes: selected.getMinutes() }),
-    );
+    if (!day) return onSelect(undefined);
+    if (!time) return onSelect(endOfDay(day));
+    onSelect(set(day, { hours: time.getHours(), minutes: time.getMinutes() }));
   }
 
-  // Picking a time without a date uses today
-  function handleTimeChange(time: { hours?: number; minutes?: number }) {
-    onSelect(set(selected ?? startOfToday(), time));
+  // Picking the first time starts from midnight; without a date uses today
+  function handleTimeChange(newTime: { hours?: number; minutes?: number }) {
+    onSelect(set(time ?? startOfDay(selected ?? new Date()), newTime));
   }
 
   function handleHourChange(hour: number) {
@@ -52,12 +57,12 @@ export function DateTimePicker({
 
   function handlePeriodChange(period: (typeof PERIODS)[number]) {
     if ((period === "PM") === isPM) return;
-    const hours = selected?.getHours() ?? 0;
+    const hours = time?.getHours() ?? 0;
     handleTimeChange({ hours: period === "PM" ? hours + 12 : hours - 12 });
   }
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         render={
           <Button
@@ -71,7 +76,7 @@ export function DateTimePicker({
             )}
           >
             <CalendarIcon />
-            {selected ? format(selected, "PP p") : placeholder}
+            {selected ? format(selected, time ? "PP p" : "PP") : placeholder}
           </Button>
         }
       />
@@ -93,9 +98,7 @@ export function DateTimePicker({
                     key={hour}
                     label={String(hour)}
                     ariaLabel={`${hour} o'clock`}
-                    active={
-                      !!selected && selected.getHours() % 12 === hour % 12
-                    }
+                    active={!!time && time.getHours() % 12 === hour % 12}
                     onClick={() => handleHourChange(hour)}
                   />
                 ))}
@@ -111,7 +114,7 @@ export function DateTimePicker({
                     key={minute}
                     label={String(minute).padStart(2, "0")}
                     ariaLabel={`${minute} minutes`}
-                    active={!!selected && selected.getMinutes() === minute}
+                    active={!!time && time.getMinutes() === minute}
                     onClick={() => handleTimeChange({ minutes: minute })}
                   />
                 ))}
@@ -126,13 +129,41 @@ export function DateTimePicker({
                   <TimeOption
                     key={period}
                     label={period}
-                    active={!!selected && (period === "PM") === isPM}
+                    active={!!time && (period === "PM") === isPM}
                     onClick={() => handlePeriodChange(period)}
                   />
                 ))}
               </div>
             </ScrollArea>
           </div>
+        </div>
+
+        <div className="flex justify-between gap-2 border-t p-2">
+          {/* Clear date */}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              onSelect(undefined);
+              setOpen(false);
+            }}
+          >
+            {placeholder}
+          </Button>
+
+          {/* Clear time; keeps the date */}
+          {time && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => onSelect(endOfDay(time))}
+            >
+              <XIcon />
+              Clear time
+            </Button>
+          )}
         </div>
       </PopoverContent>
     </Popover>

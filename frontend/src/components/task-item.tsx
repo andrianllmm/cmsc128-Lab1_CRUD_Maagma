@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { formatRelative } from "date-fns";
+import { isPast } from "date-fns";
+import { formatDueDate } from "@/lib/dates";
 import type { UpdateTaskInput } from "@/schemas/tasks";
 import type { Task } from "@/types/tasks";
 import {
@@ -30,77 +31,101 @@ interface TaskItemProps {
 
 export function TaskItem({ task, onEdit, onDelete }: TaskItemProps) {
   const [open, setOpen] = useState(false);
+  // Disables the checkbox while its update is saving
+  const [toggling, setToggling] = useState(false);
+
+  async function toggleDone(done: boolean) {
+    setToggling(true);
+    await onEdit(task._id, { done });
+    setToggling(false);
+  }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <Card
-        role="button"
-        onClick={() => setOpen(true)}
-        className="cursor-pointer transition-colors hover:bg-muted/50"
-      >
+    <>
+      <Card className="relative transition-colors hover:bg-muted/50">
         <CardHeader>
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2">
             {/* Toggle mark as done */}
             <Checkbox
               aria-label={task.done ? "Mark as not done" : "Mark as done"}
               checked={task.done}
-              onClick={(e) => e.stopPropagation()}
-              onCheckedChange={(checked) =>
-                onEdit(task._id, { done: checked === true })
-              }
+              disabled={toggling}
+              onCheckedChange={(checked) => toggleDone(checked === true)}
+              className="relative z-10"
             />
 
-            {/* Title */}
+            {/* Title; its overlay makes the whole card open the edit dialog */}
             <CardTitle
-              className={cn(task.done && "text-muted-foreground line-through")}
+              className={cn(
+                "min-w-0 wrap-anywhere",
+                task.done && "text-muted-foreground line-through",
+              )}
             >
-              {task.title}
+              <button
+                type="button"
+                aria-haspopup="dialog"
+                onClick={() => setOpen(true)}
+                className="cursor-pointer text-left outline-none after:absolute after:inset-0 after:rounded-xl focus-visible:after:ring-2 focus-visible:after:ring-ring/50"
+              >
+                {task.title}
+              </button>
             </CardTitle>
           </div>
 
           {/* Delete button */}
-          <CardAction>
-            <div onClick={(e) => e.stopPropagation()}>
-              <TaskDeleteConfirmDialog
-                taskTitle={task.title}
-                onConfirm={() => onDelete(task._id)}
-              />
-            </div>
+          <CardAction className="relative z-10">
+            <TaskDeleteConfirmDialog
+              taskTitle={task.title}
+              onConfirm={() => onDelete(task._id)}
+            />
           </CardAction>
         </CardHeader>
 
-        <CardContent className="flex flex-wrap items-center gap-2">
+        {/* Hidden when there's no details to show */}
+        <CardContent className="flex flex-wrap items-center gap-2 empty:hidden">
           {/* Due date */}
           {task.dueDate && (
-            <span className="text-sm text-muted-foreground">
-              {formatRelative(new Date(task.dueDate), new Date())}
+            <span
+              className={cn(
+                "text-sm text-muted-foreground",
+                // Overdue if past due and not done
+                !task.done &&
+                  isPast(new Date(task.dueDate)) &&
+                  "text-destructive",
+              )}
+            >
+              {formatDueDate(new Date(task.dueDate))}
             </span>
           )}
 
-          {/* Priority */}
-          <PriorityBadge priority={task.priority} />
+          {/* Priority; hidden if default */}
+          {task.priority !== "None" && (
+            <PriorityBadge priority={task.priority} />
+          )}
 
-          {/* Tag */}
-          <TagBadge tag={task.tag} />
+          {/* Tag; hidden if default */}
+          {task.tag !== "Others" && <TagBadge tag={task.tag} />}
         </CardContent>
       </Card>
 
-      {/* Edit task dialog */}
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Edit task</DialogTitle>
-        </DialogHeader>
+      {/* Edit task dialog; kept outside the card so the delete dialog isn't nested in it */}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Edit task</DialogTitle>
+          </DialogHeader>
 
-        <TaskForm
-          task={task}
-          submitLabel="Save"
-          onSubmit={async (data) => {
-            const ok = await onEdit(task._id, data);
-            if (ok) setOpen(false);
-            return ok;
-          }}
-        />
-      </DialogContent>
-    </Dialog>
+          <TaskForm
+            task={task}
+            submitLabel="Save"
+            onSubmit={async (data) => {
+              const ok = await onEdit(task._id, data);
+              if (ok) setOpen(false);
+              return ok;
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

@@ -1,8 +1,9 @@
+import { useId } from "react";
 import { useForm } from "@tanstack/react-form";
 import type { z } from "zod";
 import { Loader2Icon } from "lucide-react";
 import { createTaskSchema, type CreateTaskInput } from "@/schemas/tasks";
-import type { Task } from "@/types/tasks";
+import { TITLE_MAX_LENGTH, type Task } from "@/types/tasks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
@@ -23,6 +24,9 @@ export function TaskForm({
   submitLabel = "Create",
   onSubmit,
 }: TaskFormProps) {
+  // Unique per instance since create and edit forms can coexist
+  const id = useId();
+
   const defaultValues: TaskFormValues = {
     title: task?.title ?? "",
     dueDate: task?.dueDate ? new Date(task.dueDate) : null,
@@ -57,13 +61,14 @@ export function TaskForm({
       <form.Field name="title">
         {(field) => (
           <FormField
-            htmlFor="title"
+            htmlFor={`${id}-title`}
             label="Title"
             error={field.state.meta.errors[0]?.message}
           >
             <Input
-              id="title"
+              id={`${id}-title`}
               placeholder="What do you want to do?"
+              maxLength={TITLE_MAX_LENGTH}
               value={field.state.value}
               onBlur={field.handleBlur}
               onChange={(e) => field.handleChange(e.target.value)}
@@ -73,18 +78,18 @@ export function TaskForm({
         )}
       </form.Field>
 
-      <div className="flex gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:flex">
         {/* Due date */}
         <form.Field name="dueDate">
           {(field) => (
             <FormField
-              htmlFor="dueDate"
+              htmlFor={`${id}-dueDate`}
               label="Due date"
               error={field.state.meta.errors[0]?.message}
-              className="flex-1"
+              className="col-span-2 sm:flex-1"
             >
               <DateTimePicker
-                id="dueDate"
+                id={`${id}-dueDate`}
                 selected={field.state.value ?? undefined}
                 onSelect={(date) => field.handleChange(date ?? null)}
                 placeholder="No due date"
@@ -98,12 +103,12 @@ export function TaskForm({
         <form.Field name="priority">
           {(field) => (
             <FormField
-              htmlFor="priority"
+              htmlFor={`${id}-priority`}
               label="Priority"
               error={field.state.meta.errors[0]?.message}
             >
               <PrioritySelect
-                id="priority"
+                id={`${id}-priority`}
                 value={field.state.value}
                 onValueChange={field.handleChange}
               />
@@ -115,12 +120,12 @@ export function TaskForm({
         <form.Field name="tag">
           {(field) => (
             <FormField
-              htmlFor="tag"
+              htmlFor={`${id}-tag`}
               label="Tag"
               error={field.state.meta.errors[0]?.message}
             >
               <TagSelect
-                id="tag"
+                id={`${id}-tag`}
                 value={field.state.value}
                 onValueChange={field.handleChange}
               />

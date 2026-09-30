@@ -46,8 +46,12 @@ export function TaskToolbar({
   resetFilters,
   hasActiveFilters,
 }: TaskToolbarProps) {
+  // Describes the action rather than the current state
+  const sortDirLabel =
+    sortDir === "asc" ? "Sort descending instead" : "Sort ascending instead";
+
   return (
-    <div className="flex flex-row items-center justify-between gap-2">
+    <div className="flex flex-row flex-wrap items-center justify-between gap-2">
       {/* Sorting */}
       <div className="flex flex-row items-center gap-1">
         {/* Select sort by option */}
@@ -55,7 +59,7 @@ export function TaskToolbar({
           value={sortBy}
           onValueChange={(v) => v && setSortBy(v as SortBy)}
         >
-          <SelectTrigger>
+          <SelectTrigger aria-label="Sort by">
             <SelectValue placeholder="Sort by">
               {(v: SortBy | null) => (v ? SORT_LABELS[v] : "Sort by")}
             </SelectValue>
@@ -74,7 +78,8 @@ export function TaskToolbar({
           type="button"
           variant="outline"
           size="icon"
-          aria-label={sortDir === "asc" ? "Sort ascending" : "Sort descending"}
+          aria-label={sortDirLabel}
+          title={sortDirLabel}
           onClick={toggleSortDir}
         >
           {sortDir === "asc" ? <ArrowUpIcon /> : <ArrowDownIcon />}
@@ -88,7 +93,7 @@ export function TaskToolbar({
           value={filters.tag}
           onValueChange={(v) => v && updateFilters("tag", v as Filters["tag"])}
         >
-          <SelectTrigger>
+          <SelectTrigger aria-label="Filter by tag">
             <SelectValue placeholder="Tag">
               {(v: Filters["tag"] | null) =>
                 v && v !== "All" ? <TagBadge tag={v} /> : "All tags"
@@ -113,7 +118,7 @@ export function TaskToolbar({
             v && updateFilters("priority", v as Filters["priority"])
           }
         >
-          <SelectTrigger>
+          <SelectTrigger aria-label="Filter by priority">
             <SelectValue placeholder="Priority">
               {(v: Filters["priority"] | null) =>
                 v && v !== "All" ? (

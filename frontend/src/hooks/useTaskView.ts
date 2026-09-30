@@ -92,6 +92,9 @@ export function useTaskView(tasks: Task[]) {
         );
       })
       .sort((a, b) => {
+        // Done tasks always go last regardless of sort direction
+        if (a.done !== b.done) return a.done ? 1 : -1;
+
         const cmp = compareTasks(a, b, sortBy);
         return sortDir === "asc" ? cmp : -cmp;
       }),
