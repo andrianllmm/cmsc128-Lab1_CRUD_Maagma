@@ -39,7 +39,9 @@ export function TaskDeleteConfirmDialog({
 
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete "{taskTitle}"?</AlertDialogTitle>
+          <AlertDialogTitle className="min-w-0 wrap-anywhere">
+            Delete "{taskTitle}"?
+          </AlertDialogTitle>
           <AlertDialogDescription>
             You can undo this for a few seconds after deleting.
           </AlertDialogDescription>
