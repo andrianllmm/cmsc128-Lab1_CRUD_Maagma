@@ -1,20 +1,12 @@
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { Loader2Icon, LogOutIcon } from "lucide-react";
-import { meQueryOptions, useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
+import { requireAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/profile")({
-  // Logged-in users only
-  beforeLoad: async ({ context }) => {
-    // Uses the cached user if there is one
-    const user = await context.queryClient.query({
-      ...meQueryOptions,
-      staleTime: "static",
-    });
-    if (!user) throw redirect({ to: "/login" });
-    return { user };
-  },
+  beforeLoad: requireAuth,
   component: ProfilePage,
 });
 
