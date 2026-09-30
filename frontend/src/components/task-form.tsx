@@ -3,7 +3,7 @@ import { useForm } from "@tanstack/react-form";
 import type { z } from "zod";
 import { Loader2Icon } from "lucide-react";
 import { createTaskSchema, type CreateTaskInput } from "@/schemas/tasks";
-import type { Task } from "@/types/tasks";
+import { TITLE_MAX_LENGTH, type Task } from "@/types/tasks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
@@ -68,6 +68,7 @@ export function TaskForm({
             <Input
               id={`${id}-title`}
               placeholder="What do you want to do?"
+              maxLength={TITLE_MAX_LENGTH}
               value={field.state.value}
               onBlur={field.handleBlur}
               onChange={(e) => field.handleChange(e.target.value)}
