@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { isPast } from "date-fns";
 import { formatDueDate } from "@/lib/dates";
 import type { UpdateTaskInput } from "@/schemas/tasks";
 import type { Task } from "@/types/tasks";
@@ -79,7 +80,15 @@ export function TaskItem({ task, onEdit, onDelete }: TaskItemProps) {
         <CardContent className="flex flex-wrap items-center gap-2">
           {/* Due date */}
           {task.dueDate && (
-            <span className="text-sm text-muted-foreground">
+            <span
+              className={cn(
+                "text-sm text-muted-foreground",
+                // Overdue if past due and not done
+                !task.done &&
+                  isPast(new Date(task.dueDate)) &&
+                  "text-destructive",
+              )}
+            >
               {formatDueDate(new Date(task.dueDate))}
             </span>
           )}
