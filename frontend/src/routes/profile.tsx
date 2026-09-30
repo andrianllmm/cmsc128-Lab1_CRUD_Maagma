@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { format } from "date-fns";
-import { Loader2Icon, LogOutIcon } from "lucide-react";
+import { Loader2Icon, LogOutIcon, PencilIcon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { requireAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,18 @@ function ProfilePage() {
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col gap-6 px-4 py-8 sm:px-6">
-      <h2 className="text-lg font-semibold">Profile</h2>
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-lg font-semibold">Profile</h2>
+        <Button
+          variant="outline"
+          size="sm"
+          render={<Link to="/settings" />}
+          nativeButton={false}
+        >
+          <PencilIcon />
+          Edit profile
+        </Button>
+      </div>
 
       <dl className="flex flex-col gap-4 text-sm">
         <div className="flex flex-col gap-1">
