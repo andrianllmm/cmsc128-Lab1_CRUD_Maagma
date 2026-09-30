@@ -78,7 +78,7 @@ cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env
 ```
 
-`backend/.env` holds `MONGODB_URI`, `PORT`, and `CORS_ORIGIN`. `frontend/.env` holds `VITE_API_URL`. Neither file is committed; only the `.env.example` templates are.
+`backend/.env` holds `MONGODB_URI`, `PORT`, `CORS_ORIGIN`, and `APP_URL`. `frontend/.env` holds `VITE_API_URL`. Neither file is committed; only the `.env.example` templates are.
 
 Start MongoDB locally (skip this if using Atlas):
 

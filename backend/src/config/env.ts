@@ -8,6 +8,7 @@ const envSchema = z.object({
   PORT: z.coerce.number().default(3000),
   MONGODB_URI: z.url(),
   CORS_ORIGIN: z.url(),
+  APP_URL: z.url(),
   SESSION_SECRET: z.string().min(32),
 });
 
