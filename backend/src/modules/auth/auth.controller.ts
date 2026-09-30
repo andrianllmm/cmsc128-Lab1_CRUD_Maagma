@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 
+import { SESSION_COOKIE_NAME } from "../../config/session.js";
 import { authService } from "./auth.service.js";
 import { userService } from "../users/users.service.js";
 import type { RegisterInput, LoginInput } from "./auth.schema.js";
@@ -45,6 +46,16 @@ const login = async (
   res.status(200).json(user);
 };
 
+const logout = async (req: Request, res: Response) => {
+  // Delete the session from the store so its ID can't be reused
+  await new Promise<void>((resolve, reject) =>
+    req.session.destroy((err) => (err ? reject(err) : resolve())),
+  );
+  res.clearCookie(SESSION_COOKIE_NAME);
+
+  res.status(204).end();
+};
+
 const me = async (req: Request, res: Response) => {
   const user = await userService.findById(req.session.userId!);
 
@@ -59,5 +70,6 @@ const me = async (req: Request, res: Response) => {
 export const authController = {
   register,
   login,
+  logout,
   me,
 };

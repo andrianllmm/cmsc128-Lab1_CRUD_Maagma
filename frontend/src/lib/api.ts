@@ -36,5 +36,8 @@ export async function apiFetch<T>(
     throw new ApiError(res.status, message);
   }
 
+  // No body to parse
+  if (res.status === 204) return undefined as T;
+
   return res.json();
 }
