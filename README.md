@@ -1,6 +1,19 @@
 # TODO
 
-A to-do list app with create, read, update, and delete operations.
+A to-do list app built with the MERN stack.
+
+## Features
+
+### Task Management
+
+- Task list showing title, due date, priority, and tag for every task.
+- Add tasks with title, due date and time, priority, and tag.
+- Edit any field of a task.
+- Delete tasks behind a confirmation dialog.
+- Undo a delete within 5 seconds via a toast; the task is only removed from the database once the toast closes (`frontend/src/hooks/useTasks.ts`).
+- Mark tasks as done, shown with a checkbox and strikethrough.
+- Sort by date added, due date, priority, or tag (ascending or descending), and filter by tag and priority, client-side (`frontend/src/hooks/useTaskView.ts`).
+- Tasks persist in MongoDB across browser refreshes and server restarts.
 
 ## Tech Stack
 
@@ -32,15 +45,15 @@ One language (TypeScript) across frontend and backend also means one set of type
 │   └── src/
 │       ├── config/          # env, db connection, swagger setup
 │       ├── middleware/      # request validation
-│       ├── modules/tasks/   # task model, schema, controller, service, router
+│       ├── modules/         # feature modules (model, schema, controller, service, router)
 │       └── server.ts        # Express app entry point
 ├── frontend/
 │   └── src/
 │       ├── api/             # HTTP calls to the backend
-│       ├── components/      # UI components (task list, form, dialogs, etc.)
-│       ├── hooks/           # useTasks (data + CRUD actions), useTaskView (sort/filter)
+│       ├── components/      # UI components
+│       ├── hooks/           # data and view-state hooks
 │       ├── schemas/         # Zod validation for forms
-│       └── types/           # shared task types
+│       └── types/           # shared types
 └── README.md
 ```
 
@@ -95,7 +108,7 @@ pnpm dev
 
 ## Data Model
 
-Each task document in MongoDB has:
+### Task
 
 | Field       | Type     | Notes                                               |
 | ----------- | -------- | --------------------------------------------------- |
@@ -110,7 +123,9 @@ Each task document in MongoDB has:
 
 ## API Endpoints
 
-All routes are prefixed with `/api` and validated with Zod before reaching the database.
+All routes are prefixed with `/api` and validated with Zod before reaching the database. Full request/response schemas are available at `/api-docs`.
+
+### Tasks
 
 | Method | Endpoint         | Description                                            |
 | ------ | ---------------- | ------------------------------------------------------ |
@@ -137,27 +152,9 @@ Example update request body (marking a task done):
 { "done": true }
 ```
 
-Full request/response schemas are available at `/api-docs`.
-
-## Features
-
-### Minimum requirements
-
-- Task list view showing title, due date, priority, and tag for every task.
-- Add task with title, due date and time, priority, and tag.
-- Edit task, updating any of the above fields.
-- Delete task, guarded by a confirmation dialog.
-- Mark task as done, shown with a strikethrough and a checkbox.
-- Data persists in MongoDB and survives a browser refresh or server restart.
-
-### Expanded features (2 of 3 implemented)
-
-**Undo on delete.** Deleting a task removes it from the visible list immediately and shows a toast with an "Undo" action for 5 seconds. The task is only deleted from the database once the toast is dismissed, times out, or a new delete replaces it.
-Clicking "Undo" restores it to the list instead. This logic lives in `frontend/src/hooks/useTasks.ts`.
-
-**Sort and filter.** Tasks can be sorted by date added, due date, priority, or tag, in ascending or descending order, and filtered by tag and priority. Sorting and filtering happen on client-side over the already-fetched task list. This logic lives in `frontend/src/hooks/useTaskView.ts`.
-
 ## Screenshots
+
+### Task Management
 
 ![Task list](docs/images/screenshot.png)
 ![Editing a task](docs/images/screenshot-editing.png)
