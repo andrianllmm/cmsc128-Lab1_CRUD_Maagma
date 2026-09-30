@@ -9,6 +9,7 @@ import { sessionMiddleware } from "./config/session.js";
 import { swaggerSpec } from "./config/swagger.js";
 import { errorHandler, notFound } from "./middleware/error.js";
 
+import { authRouter } from "./modules/auth/auth.router.js";
 import { taskRouter } from "./modules/tasks/tasks.router.js";
 
 const app = express();
@@ -21,6 +22,7 @@ app.use(sessionMiddleware);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+app.use("/api/auth", authRouter);
 app.use("/api/tasks", taskRouter);
 
 /**
