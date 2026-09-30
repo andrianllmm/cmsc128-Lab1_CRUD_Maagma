@@ -26,7 +26,7 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider
       attribute="class"
-      defaultTheme="system"
+      defaultTheme="dark"
       enableSystem
       disableTransitionOnChange
     >

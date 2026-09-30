@@ -21,7 +21,7 @@ export function PrioritySelect({
 }: PrioritySelectProps) {
   return (
     <Select value={value} onValueChange={(v) => onValueChange(v ?? undefined)}>
-      <SelectTrigger id={id} className="border-0">
+      <SelectTrigger id={id} className="border-0 dark:bg-transparent">
         <SelectValue placeholder="Select priority">
           {(v: Priority | null) =>
             v ? <PriorityBadge priority={v} /> : "Select priority"
