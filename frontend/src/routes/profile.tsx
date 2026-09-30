@@ -1,6 +1,8 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { format } from "date-fns";
-import { meQueryOptions } from "@/hooks/useAuth";
+import { Loader2Icon, LogOutIcon } from "lucide-react";
+import { meQueryOptions, useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/profile")({
   // Logged-in users only
@@ -18,6 +20,14 @@ export const Route = createFileRoute("/profile")({
 
 function ProfilePage() {
   const { user } = Route.useRouteContext();
+  const { logout, loggingOut } = useAuth();
+  const navigate = useNavigate();
+
+  async function handleLogout() {
+    const ok = await logout();
+    // Replace so going back doesn't return to this page
+    if (ok) navigate({ to: "/login", replace: true });
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col gap-6 px-4 py-8 sm:px-6">
@@ -39,6 +49,16 @@ function ProfilePage() {
           </dd>
         </div>
       </dl>
+
+      <Button
+        variant="outline"
+        className="self-start"
+        onClick={handleLogout}
+        disabled={loggingOut}
+      >
+        {loggingOut ? <Loader2Icon className="animate-spin" /> : <LogOutIcon />}
+        Log out
+      </Button>
     </div>
   );
 }
