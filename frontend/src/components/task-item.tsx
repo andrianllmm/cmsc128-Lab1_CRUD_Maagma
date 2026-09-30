@@ -77,7 +77,8 @@ export function TaskItem({ task, onEdit, onDelete }: TaskItemProps) {
           </CardAction>
         </CardHeader>
 
-        <CardContent className="flex flex-wrap items-center gap-2">
+        {/* Hidden when there's no details to show */}
+        <CardContent className="flex flex-wrap items-center gap-2 empty:hidden">
           {/* Due date */}
           {task.dueDate && (
             <span
@@ -93,11 +94,13 @@ export function TaskItem({ task, onEdit, onDelete }: TaskItemProps) {
             </span>
           )}
 
-          {/* Priority */}
-          <PriorityBadge priority={task.priority} />
+          {/* Priority; hidden if default */}
+          {task.priority !== "None" && (
+            <PriorityBadge priority={task.priority} />
+          )}
 
-          {/* Tag */}
-          <TagBadge tag={task.tag} />
+          {/* Tag; hidden if default */}
+          {task.tag !== "Others" && <TagBadge tag={task.tag} />}
         </CardContent>
       </Card>
 
