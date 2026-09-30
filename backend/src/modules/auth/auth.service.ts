@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { hashPassword, verifyPassword } from "../../lib/password.js";
 import { env } from "../../config/env.js";
+import { destroyUserSessions } from "../../config/session.js";
 import { sendMail } from "../../lib/mailer.js";
 import type { UserDocument } from "../users/users.model.js";
 import { RESET_TOKEN_TTL_MS } from "../users/users.constants.js";
@@ -54,18 +55,20 @@ const checkPassword = async (
 };
 
 /**
- * Replaces a user's password.
+ * Replaces a user's password and logs out their other sessions.
  * Returns `false` if the current password is wrong.
  * */
 const changePassword = async (
   userId: string,
   currentPassword: string,
   newPassword: string,
+  currentSessionId: string,
 ): Promise<boolean> => {
   if (!(await checkPassword(userId, currentPassword))) return false;
 
   const hashedPassword = await hashPassword(newPassword);
   await userService.updatePasswordHash(userId, hashedPassword);
+  await destroyUserSessions(userId, currentSessionId);
   return true;
 };
 
@@ -115,6 +118,7 @@ const resetPassword = async (
 
   const hashedPassword = await hashPassword(newPassword);
   await userService.updatePasswordHash(user.id, hashedPassword);
+  await destroyUserSessions(user.id);
   return true;
 };
 
