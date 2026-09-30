@@ -37,7 +37,37 @@ const login = async (data: LoginInput): Promise<UserDocument | null> => {
   return valid ? user : null;
 };
 
+/**
+ * Checks a user's current password
+ * */
+const checkPassword = async (
+  userId: string,
+  password: string,
+): Promise<boolean> => {
+  const user = await userService.findByIdWithPassword(userId);
+  if (!user) return false;
+  return verifyPassword(user.passwordHash, password);
+};
+
+/**
+ * Replaces a user's password.
+ * Returns `false` if the current password is wrong.
+ * */
+const changePassword = async (
+  userId: string,
+  currentPassword: string,
+  newPassword: string,
+): Promise<boolean> => {
+  if (!(await checkPassword(userId, currentPassword))) return false;
+
+  const hashedPassword = await hashPassword(newPassword);
+  await userService.updatePasswordHash(userId, hashedPassword);
+  return true;
+};
+
 export const authService = {
   register,
   login,
+  checkPassword,
+  changePassword,
 };
