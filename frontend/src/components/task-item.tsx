@@ -31,6 +31,14 @@ interface TaskItemProps {
 
 export function TaskItem({ task, onEdit, onDelete }: TaskItemProps) {
   const [open, setOpen] = useState(false);
+  // Disables the checkbox while its update is saving
+  const [toggling, setToggling] = useState(false);
+
+  async function toggleDone(done: boolean) {
+    setToggling(true);
+    await onEdit(task._id, { done });
+    setToggling(false);
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -41,9 +49,8 @@ export function TaskItem({ task, onEdit, onDelete }: TaskItemProps) {
             <Checkbox
               aria-label={task.done ? "Mark as not done" : "Mark as done"}
               checked={task.done}
-              onCheckedChange={(checked) =>
-                onEdit(task._id, { done: checked === true })
-              }
+              disabled={toggling}
+              onCheckedChange={(checked) => toggleDone(checked === true)}
               className="relative z-10"
             />
 
