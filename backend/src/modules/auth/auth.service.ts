@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { hashPassword, verifyPassword } from "../../lib/password.js";
 import { env } from "../../config/env.js";
+import { destroyUserSessions } from "../../config/session.js";
 import { sendMail } from "../../lib/mailer.js";
 import type { UserDocument } from "../users/users.model.js";
 import { RESET_TOKEN_TTL_MS } from "../users/users.constants.js";
@@ -115,6 +116,7 @@ const resetPassword = async (
 
   const hashedPassword = await hashPassword(newPassword);
   await userService.updatePasswordHash(user.id, hashedPassword);
+  await destroyUserSessions(user.id);
   return true;
 };
 
