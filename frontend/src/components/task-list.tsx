@@ -33,7 +33,7 @@ export function TaskList({
   }
 
   return (
-    <ul className="flex flex-col gap-3">
+    <ul aria-label="Tasks" className="flex flex-col gap-3">
       {tasks.map((task) => (
         <li key={task._id}>
           <TaskItem task={task} onEdit={onEdit} onDelete={onDelete} />
@@ -45,7 +45,7 @@ export function TaskList({
 
 function TaskListSkeleton({ count = 10 }: { count?: number }) {
   return (
-    <ul className="flex flex-col gap-3">
+    <ul aria-label="Loading tasks" aria-busy className="flex flex-col gap-3">
       {Array.from({ length: count }).map((_, i) => (
         <li key={i}>
           <Skeleton className="h-24 w-full" />
