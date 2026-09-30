@@ -13,6 +13,10 @@ const findByEmail = async (email: string): Promise<UserDocument | null> => {
   return UserModel.findOne({ email });
 };
 
+const findByEmailWithPassword = async (email: string) => {
+  return UserModel.findOne({ email }).select("+passwordHash");
+};
+
 /**
  * Creates a user.
  * Returns `null` if the email is already taken.
@@ -36,5 +40,6 @@ const createUser = async (
 
 export const userService = {
   findByEmail,
+  findByEmailWithPassword,
   createUser,
 };

@@ -1,18 +1,18 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { RegisterForm } from "@/components/register-form";
 import { useAuth } from "@/hooks/useAuth";
-import type { RegisterInput } from "@/schemas/auth";
+import type { LoginInput } from "@/schemas/auth";
+import { LoginForm } from "@/components/login-form";
 
-export const Route = createFileRoute("/register")({
-  component: RegisterPage,
+export const Route = createFileRoute("/login")({
+  component: LoginPage,
 });
 
-function RegisterPage() {
-  const { register } = useAuth();
+function LoginPage() {
+  const { login } = useAuth();
   const navigate = useNavigate();
 
-  async function handleRegister(data: RegisterInput) {
-    const ok = await register(data);
+  async function handleLogin(data: LoginInput) {
+    const ok = await login(data);
     if (ok) navigate({ to: "/" });
     return ok;
   }
@@ -20,15 +20,15 @@ function RegisterPage() {
   return (
     <div className="flex flex-1 items-center justify-center px-4 py-8 sm:px-6">
       <div className="flex w-full max-w-sm flex-col gap-6">
-        <h2 className="text-lg font-semibold">Create an account</h2>
-        <RegisterForm onSubmit={handleRegister} />
+        <h2 className="text-lg font-semibold">Welcome back!</h2>
+        <LoginForm onSubmit={handleLogin} />
         <p className="text-center text-sm text-muted-foreground">
-          Already have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link
-            to="/login"
+            to="/register"
             className="font-medium text-foreground underline-offset-4 hover:underline"
           >
-            Log in
+            Create one
           </Link>
         </p>
       </div>
