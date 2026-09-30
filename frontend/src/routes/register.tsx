@@ -1,9 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { RegisterForm } from "@/components/register-form";
 import { useAuth } from "@/hooks/useAuth";
+import { requireGuest } from "@/lib/auth";
 import type { RegisterInput } from "@/schemas/auth";
 
 export const Route = createFileRoute("/register")({
+  beforeLoad: requireGuest,
   component: RegisterPage,
 });
 
