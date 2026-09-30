@@ -15,7 +15,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PriorityBadge } from "@/components/priority-badge";
@@ -42,7 +41,7 @@ export function TaskItem({ task, onEdit, onDelete }: TaskItemProps) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <>
       <Card className="relative transition-colors hover:bg-muted/50">
         <CardHeader>
           <div className="flex min-w-0 items-center gap-2">
@@ -62,9 +61,14 @@ export function TaskItem({ task, onEdit, onDelete }: TaskItemProps) {
                 task.done && "text-muted-foreground line-through",
               )}
             >
-              <DialogTrigger className="cursor-pointer text-left outline-none after:absolute after:inset-0 after:rounded-xl focus-visible:after:ring-2 focus-visible:after:ring-ring/50">
+              <button
+                type="button"
+                aria-haspopup="dialog"
+                onClick={() => setOpen(true)}
+                className="cursor-pointer text-left outline-none after:absolute after:inset-0 after:rounded-xl focus-visible:after:ring-2 focus-visible:after:ring-ring/50"
+              >
                 {task.title}
-              </DialogTrigger>
+              </button>
             </CardTitle>
           </div>
 
@@ -104,22 +108,24 @@ export function TaskItem({ task, onEdit, onDelete }: TaskItemProps) {
         </CardContent>
       </Card>
 
-      {/* Edit task dialog */}
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Edit task</DialogTitle>
-        </DialogHeader>
+      {/* Edit task dialog; kept outside the card so the delete dialog isn't nested in it */}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Edit task</DialogTitle>
+          </DialogHeader>
 
-        <TaskForm
-          task={task}
-          submitLabel="Save"
-          onSubmit={async (data) => {
-            const ok = await onEdit(task._id, data);
-            if (ok) setOpen(false);
-            return ok;
-          }}
-        />
-      </DialogContent>
-    </Dialog>
+          <TaskForm
+            task={task}
+            submitLabel="Save"
+            onSubmit={async (data) => {
+              const ok = await onEdit(task._id, data);
+              if (ok) setOpen(false);
+              return ok;
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
