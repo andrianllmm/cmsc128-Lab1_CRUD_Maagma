@@ -1,4 +1,5 @@
 import { useForm } from "@tanstack/react-form";
+import { Link } from "@tanstack/react-router";
 import type { z } from "zod";
 import { Loader2Icon } from "lucide-react";
 import { loginSchema, type LoginInput } from "@/schemas/auth";
@@ -81,6 +82,13 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
           </FormField>
         )}
       </form.Field>
+
+      <Link
+        to="/forgot-password"
+        className="self-end text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+      >
+        Forgot password?
+      </Link>
 
       <form.Subscribe selector={(state) => state.isSubmitting}>
         {(isSubmitting) => (
