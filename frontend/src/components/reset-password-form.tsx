@@ -1,33 +1,31 @@
 import { useForm } from "@tanstack/react-form";
-import { Link } from "@tanstack/react-router";
 import type { z } from "zod";
 import { Loader2Icon } from "lucide-react";
-import { loginSchema, type LoginInput } from "@/schemas/auth";
-import { PASSWORD_MAX_LENGTH } from "@/types/users";
+import { resetPasswordSchema, type ResetPasswordInput } from "@/schemas/auth";
+import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "@/types/users";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { FormField } from "@/components/ui/form-field";
 
-interface LoginFormProps {
-  onSubmit: (data: LoginInput) => Promise<boolean>;
+interface ResetPasswordFormProps {
+  onSubmit: (data: ResetPasswordInput) => Promise<boolean>;
 }
 
-type LoginFormValues = z.input<typeof loginSchema>;
+type ResetPasswordFormValues = z.input<typeof resetPasswordSchema>;
 
-export function LoginForm({ onSubmit }: LoginFormProps) {
-  const defaultValues: LoginFormValues = {
-    email: "",
-    password: "",
+export function ResetPasswordForm({ onSubmit }: ResetPasswordFormProps) {
+  const defaultValues: ResetPasswordFormValues = {
+    newPassword: "",
+    confirmPassword: "",
   };
 
   const form = useForm({
     defaultValues,
     validators: {
-      onSubmit: loginSchema,
+      onSubmit: resetPasswordSchema,
     },
     onSubmit: async ({ value }) => {
-      await onSubmit(loginSchema.parse(value));
+      await onSubmit(resetPasswordSchema.parse(value));
     },
   });
 
@@ -40,40 +38,40 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
       }}
       className="flex flex-col gap-4"
     >
-      {/* Email */}
-      <form.Field name="email">
+      <form.Field name="newPassword">
         {(field) => (
           <FormField
-            htmlFor="email"
-            label="Email"
+            htmlFor="new-password"
+            label="New password"
             error={field.state.meta.errors[0]?.message}
           >
-            <Input
-              id="email"
-              // Not `type="email"` to avoid the browser's own validation UI
-              inputMode="email"
-              autoComplete="email"
-              placeholder="you@example.com"
+            <PasswordInput
+              id="new-password"
+              autoComplete="new-password"
+              maxLength={PASSWORD_MAX_LENGTH}
+              aria-describedby="new-password-hint"
               value={field.state.value}
               onBlur={field.handleBlur}
               onChange={(e) => field.handleChange(e.target.value)}
               autoFocus
             />
+            <p id="new-password-hint" className="text-sm text-muted-foreground">
+              At least {PASSWORD_MIN_LENGTH} characters.
+            </p>
           </FormField>
         )}
       </form.Field>
 
-      {/* Password */}
-      <form.Field name="password">
+      <form.Field name="confirmPassword">
         {(field) => (
           <FormField
-            htmlFor="password"
-            label="Password"
+            htmlFor="confirm-password"
+            label="Confirm new password"
             error={field.state.meta.errors[0]?.message}
           >
             <PasswordInput
-              id="password"
-              autoComplete="current-password"
+              id="confirm-password"
+              autoComplete="new-password"
               maxLength={PASSWORD_MAX_LENGTH}
               value={field.state.value}
               onBlur={field.handleBlur}
@@ -83,18 +81,11 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
         )}
       </form.Field>
 
-      <Link
-        to="/forgot-password"
-        className="self-end text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-      >
-        Forgot password?
-      </Link>
-
       <form.Subscribe selector={(state) => state.isSubmitting}>
         {(isSubmitting) => (
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting && <Loader2Icon className="animate-spin" />}
-            Log in
+            Reset password
           </Button>
         )}
       </form.Subscribe>

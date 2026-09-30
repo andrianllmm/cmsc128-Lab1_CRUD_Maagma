@@ -3,7 +3,12 @@ import { Router } from "express";
 import { authController } from "./auth.controller.js";
 import { requireAuth } from "../../middleware/auth.js";
 import { validateBody } from "../../middleware/validate.js";
-import { loginSchema, registerSchema } from "./auth.schema.js";
+import {
+  forgotPasswordSchema,
+  loginSchema,
+  registerSchema,
+  resetPasswordSchema,
+} from "./auth.schema.js";
 
 export const authRouter: Router = Router();
 
@@ -98,3 +103,64 @@ authRouter.post("/logout", authController.logout);
  *        description: Not logged in
  */
 authRouter.get("/me", requireAuth, authController.me);
+
+/**
+ * @openapi
+ * /auth/forgot-password:
+ *  post:
+ *    summary: Request a password reset link
+ *    description: Responds the same whether or not the email exists. The link is printed in the server terminal.
+ *    tags: [Auth]
+ *    requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            required: [email]
+ *            properties:
+ *              email:
+ *                type: string
+ *                format: email
+ *    responses:
+ *      200:
+ *        description: Reset link sent if the account exists
+ *      400:
+ *        description: Invalid email
+ */
+authRouter.post(
+  "/forgot-password",
+  validateBody(forgotPasswordSchema),
+  authController.forgotPassword,
+);
+
+/**
+ * @openapi
+ * /auth/reset-password:
+ *  post:
+ *    summary: Set a new password using a reset token
+ *    tags: [Auth]
+ *    requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            required: [token, newPassword]
+ *            properties:
+ *              token:
+ *                type: string
+ *              newPassword:
+ *                type: string
+ *                format: password
+ *    responses:
+ *      200:
+ *        description: Password reset
+ *      400:
+ *        description: Invalid data, or the reset token is invalid or expired
+ */
+authRouter.post(
+  "/reset-password",
+  validateBody(resetPasswordSchema),
+  authController.resetPassword,
+);

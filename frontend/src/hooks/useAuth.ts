@@ -6,7 +6,12 @@ import {
 } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import type { RegisterInput, LoginInput } from "@/schemas/auth";
+import type {
+  RegisterInput,
+  LoginInput,
+  ForgotPasswordInput,
+  ResetPasswordInput,
+} from "@/schemas/auth";
 import type { User } from "@/types/users";
 import * as authApi from "@/api/auth";
 
@@ -50,6 +55,24 @@ export function useAuth() {
     onError: (err) => toast.error(err.message || "Failed to log out"),
   });
 
+  const forgotPasswordMutation = useMutation({
+    mutationFn: authApi.forgotPassword,
+    onError: (err) => toast.error(err.message || "Failed to send reset link"),
+  });
+
+  const resetPasswordMutation = useMutation({
+    mutationFn: ({
+      token,
+      data,
+    }: {
+      token: string;
+      data: ResetPasswordInput;
+    }) => authApi.resetPassword(token, data),
+    onSuccess: () =>
+      toast.success("Password reset. Log in with your new password."),
+    onError: (err) => toast.error(err.message || "Failed to reset password"),
+  });
+
   /**
    * Creates an account and logs in.
    * Returns `false` on failure (e.g. email already in use).
@@ -91,12 +114,43 @@ export function useAuth() {
     }
   }
 
+  /**
+   * Requests a password reset link for an email.
+   * Returns `false` on failure (e.g. network error), not when the email is unknown.
+   * */
+  async function forgotPassword(data: ForgotPasswordInput): Promise<boolean> {
+    try {
+      await forgotPasswordMutation.mutateAsync(data);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Sets a new password using a reset token.
+   * Returns `false` on failure (e.g. invalid or expired token).
+   * */
+  async function resetPassword(
+    token: string,
+    data: ResetPasswordInput,
+  ): Promise<boolean> {
+    try {
+      await resetPasswordMutation.mutateAsync({ token, data });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   return {
     user: user ?? null,
     loading: isPending,
     register,
     login,
     logout,
+    forgotPassword,
+    resetPassword,
     loggingOut: logoutMutation.isPending,
   };
 }

@@ -34,6 +34,15 @@ const findByEmailWithPassword = async (email: string) => {
   return UserModel.findOne({ email }).select("+passwordHash");
 };
 
+const findByValidResetToken = async (
+  resetTokenHash: string,
+): Promise<UserDocument | null> => {
+  return UserModel.findOne({
+    resetTokenHash,
+    resetTokenExpiresAt: { $gt: new Date() },
+  });
+};
+
 /**
  * Creates a user.
  * Returns `null` if the email is already taken.
@@ -79,7 +88,22 @@ const updatePasswordHash = async (
   id: string,
   passwordHash: string,
 ): Promise<void> => {
-  await UserModel.findByIdAndUpdate(id, { passwordHash });
+  await UserModel.findByIdAndUpdate(id, {
+    passwordHash,
+    // Clears any reset token, so old reset links stop working after any password change
+    $unset: { resetTokenHash: 1, resetTokenExpiresAt: 1 },
+  });
+};
+
+const updateResetToken = async (
+  id: string,
+  resetTokenHash: string,
+  resetTokenExpiresAt: Date,
+): Promise<void> => {
+  await UserModel.findByIdAndUpdate(id, {
+    resetTokenHash,
+    resetTokenExpiresAt,
+  });
 };
 
 export const userService = {
@@ -87,8 +111,10 @@ export const userService = {
   findByIdWithPassword,
   findByEmail,
   findByEmailWithPassword,
+  findByValidResetToken,
   createUser,
   updateDisplayName,
   updateEmail,
   updatePasswordHash,
+  updateResetToken,
 };

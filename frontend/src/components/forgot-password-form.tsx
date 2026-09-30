@@ -1,33 +1,29 @@
 import { useForm } from "@tanstack/react-form";
-import { Link } from "@tanstack/react-router";
 import type { z } from "zod";
 import { Loader2Icon } from "lucide-react";
-import { loginSchema, type LoginInput } from "@/schemas/auth";
-import { PASSWORD_MAX_LENGTH } from "@/types/users";
+import { forgotPasswordSchema, type ForgotPasswordInput } from "@/schemas/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PasswordInput } from "@/components/ui/password-input";
 import { FormField } from "@/components/ui/form-field";
 
-interface LoginFormProps {
-  onSubmit: (data: LoginInput) => Promise<boolean>;
+interface ForgotPasswordFormProps {
+  onSubmit: (data: ForgotPasswordInput) => Promise<boolean>;
 }
 
-type LoginFormValues = z.input<typeof loginSchema>;
+type ForgotPasswordFormValues = z.input<typeof forgotPasswordSchema>;
 
-export function LoginForm({ onSubmit }: LoginFormProps) {
-  const defaultValues: LoginFormValues = {
+export function ForgotPasswordForm({ onSubmit }: ForgotPasswordFormProps) {
+  const defaultValues: ForgotPasswordFormValues = {
     email: "",
-    password: "",
   };
 
   const form = useForm({
     defaultValues,
     validators: {
-      onSubmit: loginSchema,
+      onSubmit: forgotPasswordSchema,
     },
     onSubmit: async ({ value }) => {
-      await onSubmit(loginSchema.parse(value));
+      await onSubmit(forgotPasswordSchema.parse(value));
     },
   });
 
@@ -63,38 +59,11 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
         )}
       </form.Field>
 
-      {/* Password */}
-      <form.Field name="password">
-        {(field) => (
-          <FormField
-            htmlFor="password"
-            label="Password"
-            error={field.state.meta.errors[0]?.message}
-          >
-            <PasswordInput
-              id="password"
-              autoComplete="current-password"
-              maxLength={PASSWORD_MAX_LENGTH}
-              value={field.state.value}
-              onBlur={field.handleBlur}
-              onChange={(e) => field.handleChange(e.target.value)}
-            />
-          </FormField>
-        )}
-      </form.Field>
-
-      <Link
-        to="/forgot-password"
-        className="self-end text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-      >
-        Forgot password?
-      </Link>
-
       <form.Subscribe selector={(state) => state.isSubmitting}>
         {(isSubmitting) => (
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting && <Loader2Icon className="animate-spin" />}
-            Log in
+            Send reset link
           </Button>
         )}
       </form.Subscribe>

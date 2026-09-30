@@ -27,13 +27,26 @@ const userSchema = new Schema(
       // Excluded from queries
       select: false,
     },
+    resetTokenHash: {
+      type: String,
+      select: false,
+    },
+    resetTokenExpiresAt: {
+      type: Date,
+      select: false,
+    },
   },
   {
     timestamps: true,
     toJSON: {
-      // Never send the hash in responses, even if it was selected
+      // Never send the hashes in responses, even if they were selected
       transform: (_doc, ret: Record<string, unknown>) => {
-        const { passwordHash: _passwordHash, ...user } = ret;
+        const {
+          passwordHash: _passwordHash,
+          resetTokenHash: _resetTokenHash,
+          resetTokenExpiresAt: _resetTokenExpiresAt,
+          ...user
+        } = ret;
         return user;
       },
     },
