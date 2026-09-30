@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { endOfDay, format, set, startOfDay } from "date-fns";
 import { hasTime } from "@/lib/dates";
 import { CalendarIcon, XIcon } from "lucide-react";
@@ -32,6 +33,8 @@ export function DateTimePicker({
   placeholder = "No date",
   className,
 }: DateTimePickerProps) {
+  const [open, setOpen] = useState(false);
+
   // Undefined if no date or the date has no time set
   const time = selected && hasTime(selected) ? selected : undefined;
   const isPM = time ? time.getHours() >= 12 : false;
@@ -59,7 +62,7 @@ export function DateTimePicker({
   }
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         render={
           <Button
@@ -135,9 +138,22 @@ export function DateTimePicker({
           </div>
         </div>
 
-        {time && (
-          <div className="flex justify-end border-t p-2">
-            {/* Clear time; keeps the date */}
+        <div className="flex justify-between gap-2 border-t p-2">
+          {/* Clear date */}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              onSelect(undefined);
+              setOpen(false);
+            }}
+          >
+            {placeholder}
+          </Button>
+
+          {/* Clear time; keeps the date */}
+          {time && (
             <Button
               type="button"
               variant="ghost"
@@ -147,8 +163,8 @@ export function DateTimePicker({
               <XIcon />
               Clear time
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </PopoverContent>
     </Popover>
   );
