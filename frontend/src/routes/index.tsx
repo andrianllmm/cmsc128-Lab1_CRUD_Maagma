@@ -27,7 +27,7 @@ function TasksPage() {
   const todoCount = countTodos(tasks);
 
   return (
-    <div className="mx-auto flex max-w-xl flex-col gap-10 px-4 py-8 sm:px-6">
+    <div className="mx-auto flex w-full max-w-xl flex-col gap-10 px-4 py-8 sm:px-6">
       <TaskForm onSubmit={createTask} />
 
       <section aria-labelledby="tasks-heading" className="flex flex-col gap-4">
