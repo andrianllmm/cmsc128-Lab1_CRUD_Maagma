@@ -1,9 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
+import { requireGuest } from "@/lib/auth";
 import type { LoginInput } from "@/schemas/auth";
 import { LoginForm } from "@/components/login-form";
 
 export const Route = createFileRoute("/login")({
+  beforeLoad: requireGuest,
   component: LoginPage,
 });
 
@@ -13,7 +15,7 @@ function LoginPage() {
 
   async function handleLogin(data: LoginInput) {
     const ok = await login(data);
-    if (ok) navigate({ to: "/profile" });
+    if (ok) navigate({ to: "/profile", replace: true });
     return ok;
   }
 

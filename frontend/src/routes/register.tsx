@@ -1,9 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { RegisterForm } from "@/components/register-form";
 import { useAuth } from "@/hooks/useAuth";
+import { requireGuest } from "@/lib/auth";
 import type { RegisterInput } from "@/schemas/auth";
 
 export const Route = createFileRoute("/register")({
+  beforeLoad: requireGuest,
   component: RegisterPage,
 });
 
@@ -13,7 +15,7 @@ function RegisterPage() {
 
   async function handleRegister(data: RegisterInput) {
     const ok = await register(data);
-    if (ok) navigate({ to: "/profile" });
+    if (ok) navigate({ to: "/profile", replace: true });
     return ok;
   }
 
