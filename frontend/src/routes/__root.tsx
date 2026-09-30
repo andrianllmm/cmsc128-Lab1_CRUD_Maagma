@@ -15,9 +15,12 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
 function RootLayout() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex min-h-svh flex-col bg-background">
       <SiteHeader />
-      <Outlet />
+      {/* Fills the space below the header */}
+      <main className="flex flex-1 flex-col">
+        <Outlet />
+      </main>
       <Toaster />
       <TanStackRouterDevtools position="bottom-right" />
     </div>

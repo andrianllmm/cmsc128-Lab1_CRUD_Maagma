@@ -1,4 +1,9 @@
-import { Schema, model, type InferSchemaType } from "mongoose";
+import {
+  Schema,
+  model,
+  type HydratedDocument,
+  type InferSchemaType,
+} from "mongoose";
 import { DISPLAY_NAME_MAX_LENGTH } from "./users.constants.js";
 
 const userSchema = new Schema(
@@ -27,7 +32,7 @@ const userSchema = new Schema(
     timestamps: true,
     toJSON: {
       // Never send the hash in responses, even if it was selected
-      transform: (_doc, ret) => {
+      transform: (_doc, ret: Record<string, unknown>) => {
         const { passwordHash: _passwordHash, ...user } = ret;
         return user;
       },
@@ -36,4 +41,6 @@ const userSchema = new Schema(
 );
 
 export type User = InferSchemaType<typeof userSchema>;
+// A saved user, with `_id` and document methods
+export type UserDocument = HydratedDocument<User>;
 export const UserModel = model("User", userSchema);
