@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { formatRelative } from "date-fns";
+import { formatDueDate } from "@/lib/dates";
 import type { UpdateTaskInput } from "@/schemas/tasks";
 import type { Task } from "@/types/tasks";
 import {
@@ -80,7 +80,7 @@ export function TaskItem({ task, onEdit, onDelete }: TaskItemProps) {
           {/* Due date */}
           {task.dueDate && (
             <span className="text-sm text-muted-foreground">
-              {formatRelative(new Date(task.dueDate), new Date())}
+              {formatDueDate(new Date(task.dueDate))}
             </span>
           )}
 
