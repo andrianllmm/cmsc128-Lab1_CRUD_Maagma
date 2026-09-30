@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
 import type { LoginInput } from "@/schemas/auth";
 import { LoginForm } from "@/components/login-form";
@@ -22,6 +22,15 @@ function LoginPage() {
       <div className="flex w-full max-w-sm flex-col gap-6">
         <h2 className="text-lg font-semibold">Welcome back!</h2>
         <LoginForm onSubmit={handleLogin} />
+        <p className="text-center text-sm text-muted-foreground">
+          Don&apos;t have an account?{" "}
+          <Link
+            to="/register"
+            className="font-medium text-foreground underline-offset-4 hover:underline"
+          >
+            Create one
+          </Link>
+        </p>
       </div>
     </div>
   );
