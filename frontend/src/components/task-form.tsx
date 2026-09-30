@@ -77,7 +77,7 @@ export function TaskForm({
         )}
       </form.Field>
 
-      <div className="flex gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:flex">
         {/* Due date */}
         <form.Field name="dueDate">
           {(field) => (
@@ -85,7 +85,7 @@ export function TaskForm({
               htmlFor={`${id}-dueDate`}
               label="Due date"
               error={field.state.meta.errors[0]?.message}
-              className="flex-1"
+              className="col-span-2 sm:flex-1"
             >
               <DateTimePicker
                 id={`${id}-dueDate`}

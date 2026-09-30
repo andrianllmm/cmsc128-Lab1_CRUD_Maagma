@@ -51,7 +51,7 @@ export function TaskToolbar({
     sortDir === "asc" ? "Sort descending instead" : "Sort ascending instead";
 
   return (
-    <div className="flex flex-row items-center justify-between gap-2">
+    <div className="flex flex-row flex-wrap items-center justify-between gap-2">
       {/* Sorting */}
       <div className="flex flex-row items-center gap-1">
         {/* Select sort by option */}
