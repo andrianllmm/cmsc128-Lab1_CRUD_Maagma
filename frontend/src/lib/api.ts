@@ -24,6 +24,8 @@ export async function apiFetch<T>(
 
   const res = await fetch(url, {
     headers: { "Content-Type": "application/json" },
+    // Send the session cookie to the API
+    credentials: "include",
     ...options,
   });
 
