@@ -17,7 +17,7 @@ interface TagSelectProps {
 export function TagSelect({ id, value, onValueChange }: TagSelectProps) {
   return (
     <Select value={value} onValueChange={(v) => onValueChange(v ?? undefined)}>
-      <SelectTrigger id={id} className="border-0">
+      <SelectTrigger id={id} className="border-0 dark:bg-transparent">
         <SelectValue placeholder="Select tag">
           {(v: Tag | null) => (v ? <TagBadge tag={v} /> : "Select tag")}
         </SelectValue>
