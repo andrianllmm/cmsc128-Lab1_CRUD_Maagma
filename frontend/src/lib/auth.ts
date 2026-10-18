@@ -23,9 +23,9 @@ export async function requireAuth({ context }: GuardArgs) {
 
 /**
  * `beforeLoad` guard for logged-out-only routes (e.g. login).
- * Redirects to the profile page if logged in.
+ * Redirects to the to-do list if logged in.
  * */
 export async function requireGuest({ context }: GuardArgs) {
   const user = await getUser(context.queryClient);
-  if (user) throw redirect({ to: "/profile" });
+  if (user) throw redirect({ to: "/" });
 }

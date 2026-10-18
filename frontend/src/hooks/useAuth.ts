@@ -27,8 +27,15 @@ export function useAuth() {
 
   const { data: user, isPending } = useQuery(meQueryOptions);
 
-  const setUser = (user: User) =>
+  // Switches the cached user, or `null` when logged out
+  const setUser = (user: User | null) => {
+    // Route guards read this cached value
     queryClient.setQueryData(meQueryOptions.queryKey, user);
+    // Drop the previous user's cached data (e.g. tasks)
+    queryClient.removeQueries({
+      predicate: (query) => query.queryKey[0] !== meQueryOptions.queryKey[0],
+    });
+  };
 
   const registerMutation = useMutation({
     mutationFn: authApi.register,
@@ -44,14 +51,7 @@ export function useAuth() {
 
   const logoutMutation = useMutation({
     mutationFn: authApi.logout,
-    onSuccess: () => {
-      // Route guards read this cached value
-      queryClient.setQueryData(meQueryOptions.queryKey, null);
-      // Drop the previous user's cached data (e.g. tasks)
-      queryClient.removeQueries({
-        predicate: (query) => query.queryKey[0] !== meQueryOptions.queryKey[0],
-      });
-    },
+    onSuccess: () => setUser(null),
     onError: (err) => toast.error(err.message || "Failed to log out"),
   });
 

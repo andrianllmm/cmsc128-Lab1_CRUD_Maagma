@@ -15,7 +15,7 @@ function RegisterPage() {
 
   async function handleRegister(data: RegisterInput) {
     const ok = await register(data);
-    if (ok) navigate({ to: "/profile", replace: true });
+    if (ok) navigate({ to: "/", replace: true });
     return ok;
   }
 
