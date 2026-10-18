@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router";
 import { LogOutIcon, SettingsIcon, SunMoonIcon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import type { User } from "@/types/users";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import { UserAvatar } from "@/components/user-avatar";
 
 interface UserMenuProps {
   user: User;
@@ -33,13 +33,13 @@ export function UserMenu({ user }: UserMenuProps) {
           />
         }
       >
-        <UserAvatar user={user} />
+        <UserAvatar displayName={user.displayName} />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-56">
         {/* Profile details; links to the profile page */}
         <DropdownMenuItem render={<Link to="/profile" />}>
-          <UserAvatar user={user} />
+          <UserAvatar displayName={user.displayName} />
           <div className="flex min-w-0 flex-col">
             <span className="truncate font-medium">{user.displayName}</span>
             <span className="truncate text-xs text-muted-foreground">
@@ -75,20 +75,4 @@ export function UserMenu({ user }: UserMenuProps) {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
-
-function UserAvatar({ user }: { user: User }) {
-  return (
-    <Avatar>
-      <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
-    </Avatar>
-  );
-}
-
-// "Juan dela Cruz" -> "JC"
-function getInitials(name: string) {
-  const words = name.trim().split(/\s+/);
-  const first = words[0][0];
-  const last = words.length > 1 ? words[words.length - 1][0] : "";
-  return (first + last).toUpperCase();
 }
