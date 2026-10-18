@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { LIST_NAME_MAX_LENGTH } from "@/types/lists";
+import { emailSchema } from "./auth";
 
 export const createListSchema = z.object({
   name: z
@@ -12,4 +13,9 @@ export const createListSchema = z.object({
     ),
 });
 
+export const addMemberSchema = z.object({
+  email: emailSchema,
+});
+
 export type CreateListInput = z.infer<typeof createListSchema>;
+export type AddMemberInput = z.infer<typeof addMemberSchema>;

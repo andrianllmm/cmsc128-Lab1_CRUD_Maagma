@@ -4,6 +4,7 @@ import { TaskToolbar } from "@/components/task-toolbar";
 import { TaskForm } from "@/components/task-form";
 import { ListSwitcher } from "@/components/list-switcher";
 import { NewListDialog } from "@/components/new-list-dialog";
+import { ListMembersDialog } from "@/components/list-members-dialog";
 import { listsQueryOptions, useLists } from "@/hooks/useLists";
 import { useTasks } from "@/hooks/useTasks";
 import { useTaskView } from "@/hooks/useTaskView";
@@ -26,7 +27,7 @@ function TasksPage() {
   const { user } = Route.useRouteContext();
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
-  const { lists, createList } = useLists();
+  const { lists, createList, addMember } = useLists();
   // Falls back to the personal list, which comes first, if the selected one isn't accessible
   const list = lists.find((l) => l._id === search.list) ?? lists[0];
   const listId = list._id;
@@ -65,6 +66,14 @@ function TasksPage() {
           userId={user._id}
           onChange={selectList}
         />
+        {/* Personal lists can't be shared */}
+        {!list.personal && (
+          <ListMembersDialog
+            list={list}
+            isOwner={list.owner._id === user._id}
+            onAddMember={(data) => addMember(listId, data)}
+          />
+        )}
         <NewListDialog onSubmit={handleCreateList} />
       </div>
 

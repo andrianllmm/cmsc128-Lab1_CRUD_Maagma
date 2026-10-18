@@ -5,7 +5,7 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query";
 import { toast } from "sonner";
-import type { CreateListInput } from "@/schemas/lists";
+import type { AddMemberInput, CreateListInput } from "@/schemas/lists";
 import type { List } from "@/types/lists";
 import * as listsApi from "@/api/lists";
 
@@ -34,6 +34,19 @@ export function useLists() {
     onError: (err) => toast.error(err.message || "Failed to create list"),
   });
 
+  const addMemberMutation = useMutation({
+    mutationFn: ({ listId, data }: { listId: string; data: AddMemberInput }) =>
+      listsApi.addMember(listId, data),
+    // Swaps in the updated list so the new member shows right away
+    onSuccess: (updated, { data }) => {
+      queryClient.setQueryData(listsQueryOptions.queryKey, (lists) =>
+        lists?.map((l) => (l._id === updated._id ? updated : l)),
+      );
+      toast.success(`Added ${data.email}`);
+    },
+    onError: (err) => toast.error(err.message || "Failed to add member"),
+  });
+
   /**
    * Creates a collaborative list.
    * Returns the new list, or `null` on failure.
@@ -46,5 +59,21 @@ export function useLists() {
     }
   }
 
-  return { lists, createList };
+  /**
+   * Adds a user to a list by email. Only the list owner can.
+   * Returns `false` on failure (e.g. no user with that email).
+   * */
+  async function addMember(
+    listId: string,
+    data: AddMemberInput,
+  ): Promise<boolean> {
+    try {
+      await addMemberMutation.mutateAsync({ listId, data });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  return { lists, createList, addMember };
 }
