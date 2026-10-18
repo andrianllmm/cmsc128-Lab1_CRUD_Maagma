@@ -2,38 +2,55 @@ import { Router } from "express";
 
 import { taskController } from "./tasks.controller.js";
 import { requireAuth } from "../../middleware/auth.js";
+import { requireListAccess } from "../../middleware/list-access.js";
 import { validateBody, validateParams } from "../../middleware/validate.js";
 import {
   createTaskSchema,
   taskIdSchema,
   updateTaskSchema,
 } from "./tasks.schema.js";
+import { listIdSchema } from "../lists/lists.schema.js";
 
-export const taskRouter: Router = Router();
+// Mounted under /lists/:listId/tasks; `mergeParams` exposes `listId`
+export const taskRouter: Router = Router({ mergeParams: true });
 
-taskRouter.use(requireAuth);
+// Every task route first checks the user can access the list
+taskRouter.use(requireAuth, validateParams(listIdSchema), requireListAccess);
 
 /**
  * @openapi
- * /tasks:
+ * /lists/{listId}/tasks:
  *  get:
  *    summary: Get all tasks
  *    tags: [Tasks]
+ *    parameters:
+ *      - name: listId
+ *        in: path
+ *        required: true
+ *        schema:
+ *          type: string
  *    responses:
  *      200:
  *        description: List of tasks
  *      401:
  *        description: Not logged in
+ *      404:
+ *        description: List not found
  */
 taskRouter.get("/", taskController.getTasks);
 
 /**
  * @openapi
- * /tasks/{id}:
+ * /lists/{listId}/tasks/{id}:
  *  get:
  *    summary: Get task by ID
  *    tags: [Tasks]
  *    parameters:
+ *      - name: listId
+ *        in: path
+ *        required: true
+ *        schema:
+ *          type: string
  *      - name: id
  *        in: path
  *        required: true
@@ -43,11 +60,11 @@ taskRouter.get("/", taskController.getTasks);
  *      200:
  *        description: A task
  *      400:
- *        description: Invalid task id
+ *        description: Invalid list or task id
  *      401:
  *        description: Not logged in
  *      404:
- *        description: Task not found
+ *        description: List or task not found
  */
 taskRouter.get(
   "/:id",
@@ -57,10 +74,16 @@ taskRouter.get(
 
 /**
  * @openapi
- * /tasks:
+ * /lists/{listId}/tasks:
  *  post:
  *    summary: Create task
  *    tags: [Tasks]
+ *    parameters:
+ *      - name: listId
+ *        in: path
+ *        required: true
+ *        schema:
+ *          type: string
  *    requestBody:
  *      required: true
  *      content:
@@ -84,19 +107,26 @@ taskRouter.get(
  *      201:
  *        description: Created task
  *      400:
- *        description: Invalid task data
+ *        description: Invalid list id or task data
  *      401:
  *        description: Not logged in
+ *      404:
+ *        description: List not found
  */
 taskRouter.post("/", validateBody(createTaskSchema), taskController.createTask);
 
 /**
  * @openapi
- * /tasks/{id}:
+ * /lists/{listId}/tasks/{id}:
  *  patch:
  *    summary: Update task
  *    tags: [Tasks]
  *    parameters:
+ *      - name: listId
+ *        in: path
+ *        required: true
+ *        schema:
+ *          type: string
  *      - name: id
  *        in: path
  *        required: true
@@ -126,11 +156,11 @@ taskRouter.post("/", validateBody(createTaskSchema), taskController.createTask);
  *      200:
  *        description: Updated task
  *      400:
- *        description: Invalid task id or data
+ *        description: Invalid list id, task id, or data
  *      401:
  *        description: Not logged in
  *      404:
- *        description: Task not found
+ *        description: List or task not found
  */
 taskRouter.patch(
   "/:id",
@@ -141,11 +171,16 @@ taskRouter.patch(
 
 /**
  * @openapi
- * /tasks/{id}:
+ * /lists/{listId}/tasks/{id}:
  *  delete:
  *    summary: Delete task
  *    tags: [Tasks]
  *    parameters:
+ *      - name: listId
+ *        in: path
+ *        required: true
+ *        schema:
+ *          type: string
  *      - name: id
  *        in: path
  *        required: true
@@ -155,11 +190,11 @@ taskRouter.patch(
  *      200:
  *        description: Deleted task
  *      400:
- *        description: Invalid task id
+ *        description: Invalid list or task id
  *      401:
  *        description: Not logged in
  *      404:
- *        description: Task not found
+ *        description: List or task not found
  */
 taskRouter.delete(
   "/:id",

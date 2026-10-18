@@ -7,6 +7,8 @@ export type Tag = (typeof TAGS)[number];
 
 export interface Task {
   _id: string;
+  // The user who created the task
+  owner: { _id: string; displayName: string };
   title: string;
   dueDate?: string | null;
   done: boolean;

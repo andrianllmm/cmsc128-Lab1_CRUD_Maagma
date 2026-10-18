@@ -6,10 +6,11 @@ import { sendMail } from "../../lib/mailer.js";
 import type { UserDocument } from "../users/users.model.js";
 import { RESET_TOKEN_TTL_MS } from "../users/users.constants.js";
 import { userService } from "../users/users.service.js";
+import { listService } from "../lists/lists.service.js";
 import type { RegisterInput, LoginInput } from "./auth.schema.js";
 
 /**
- * Creates an account.
+ * Creates an account with its personal list.
  * Returns `null` if the email is already taken.
  * */
 const register = async (data: RegisterInput): Promise<UserDocument | null> => {
@@ -17,11 +18,15 @@ const register = async (data: RegisterInput): Promise<UserDocument | null> => {
   if (existing) return null;
 
   const hashedPassword = await hashPassword(data.password);
-  return userService.createUser({
+  const user = await userService.createUser({
     email: data.email,
     displayName: data.displayName,
     passwordHash: hashedPassword,
   });
+  if (!user) return null;
+
+  await listService.createPersonalList(user.id);
+  return user;
 };
 
 // Verified against when the email is unknown, so both failures take the same time

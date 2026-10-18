@@ -10,6 +10,7 @@ import { swaggerSpec } from "./config/swagger.js";
 import { errorHandler, notFound } from "./middleware/error.js";
 
 import { authRouter } from "./modules/auth/auth.router.js";
+import { listRouter } from "./modules/lists/lists.router.js";
 import { taskRouter } from "./modules/tasks/tasks.router.js";
 import { userRouter } from "./modules/users/users.router.js";
 
@@ -24,7 +25,8 @@ app.use(sessionMiddleware);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use("/api/auth", authRouter);
-app.use("/api/tasks", taskRouter);
+app.use("/api/lists", listRouter);
+app.use("/api/lists/:listId/tasks", taskRouter);
 app.use("/api/users", userRouter);
 
 /**
