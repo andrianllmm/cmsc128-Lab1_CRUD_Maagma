@@ -106,6 +106,7 @@ function TasksPage() {
           hasActiveFilters={hasActiveFilters}
           onEdit={updateTask}
           onDelete={deleteTask}
+          showCreator={!list.personal}
         />
       </section>
     </div>

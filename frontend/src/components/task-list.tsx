@@ -10,6 +10,7 @@ interface TaskListProps {
   hasActiveFilters: boolean;
   onEdit: (id: string, data: UpdateTaskInput) => Promise<boolean>;
   onDelete: (id: string) => Promise<boolean>;
+  showCreator?: boolean;
 }
 
 export function TaskList({
@@ -19,6 +20,7 @@ export function TaskList({
   hasActiveFilters,
   onEdit,
   onDelete,
+  showCreator,
 }: TaskListProps) {
   if (loading) {
     return <TaskListSkeleton />;
@@ -36,7 +38,12 @@ export function TaskList({
     <ul className="flex flex-col gap-3">
       {tasks.map((task) => (
         <li key={task._id}>
-          <TaskItem task={task} onEdit={onEdit} onDelete={onDelete} />
+          <TaskItem
+            task={task}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            showCreator={showCreator}
+          />
         </li>
       ))}
     </ul>

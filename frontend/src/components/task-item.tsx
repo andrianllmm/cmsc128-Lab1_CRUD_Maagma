@@ -13,6 +13,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -21,15 +22,23 @@ import { PriorityBadge } from "@/components/priority-badge";
 import { TagBadge } from "@/components/tag-badge";
 import { TaskForm } from "@/components/task-form";
 import { TaskDeleteConfirmDialog } from "@/components/task-delete-confirm-dialog";
+import { UserAvatar } from "@/components/user-avatar";
 import { cn } from "cn";
 
 interface TaskItemProps {
   task: Task;
   onEdit: (id: string, data: UpdateTaskInput) => Promise<boolean>;
   onDelete: (id: string) => Promise<boolean>;
+  // In shared lists, shows who created the task
+  showCreator?: boolean;
 }
 
-export function TaskItem({ task, onEdit, onDelete }: TaskItemProps) {
+export function TaskItem({
+  task,
+  onEdit,
+  onDelete,
+  showCreator,
+}: TaskItemProps) {
   const [open, setOpen] = useState(false);
   // Disables the checkbox while its update is saving
   const [toggling, setToggling] = useState(false);
@@ -72,8 +81,15 @@ export function TaskItem({ task, onEdit, onDelete }: TaskItemProps) {
             </CardTitle>
           </div>
 
-          {/* Delete button */}
-          <CardAction className="relative z-10">
+          {/* Creator and delete button */}
+          <CardAction className="relative z-10 flex items-center gap-1">
+            {showCreator && (
+              <UserAvatar
+                displayName={task.owner.displayName}
+                size="sm"
+                label={`Created by ${task.owner.displayName}`}
+              />
+            )}
             <TaskDeleteConfirmDialog
               taskTitle={task.title}
               onConfirm={() => onDelete(task._id)}
@@ -113,6 +129,12 @@ export function TaskItem({ task, onEdit, onDelete }: TaskItemProps) {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Edit task</DialogTitle>
+            {showCreator && (
+              <DialogDescription className="flex items-center gap-2">
+                <UserAvatar displayName={task.owner.displayName} size="sm" />
+                Created by {task.owner.displayName}
+              </DialogDescription>
+            )}
           </DialogHeader>
 
           <TaskForm
