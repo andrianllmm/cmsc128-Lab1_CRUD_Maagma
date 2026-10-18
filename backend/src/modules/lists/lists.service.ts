@@ -1,4 +1,5 @@
 import { ListModel, type ListDocument } from "./lists.model.js";
+import { TaskModel } from "../tasks/tasks.model.js";
 import { PERSONAL_LIST_NAME } from "./lists.constants.js";
 
 // Only the user fields needed to show who's in a list; never the password hash
@@ -58,10 +59,29 @@ const addMember = async (
   ).populate(withUsers);
 };
 
+const renameList = async (
+  listId: string,
+  name: string,
+): Promise<ListDocument | null> => {
+  return ListModel.findByIdAndUpdate(
+    listId,
+    { name },
+    { returnDocument: "after", runValidators: true },
+  ).populate(withUsers);
+};
+
+// Deletes the list along with its tasks
+const deleteList = async (listId: string): Promise<void> => {
+  await TaskModel.deleteMany({ list: listId });
+  await ListModel.findByIdAndDelete(listId);
+};
+
 export const listService = {
   getLists,
   getListById,
   createList,
   createPersonalList,
   addMember,
+  renameList,
+  deleteList,
 };

@@ -97,3 +97,77 @@ listRouter.post(
   validateBody(addMemberSchema),
   listController.addMember,
 );
+
+/**
+ * @openapi
+ * /lists/{listId}:
+ *  patch:
+ *    summary: Rename a list (list owner only)
+ *    tags: [Lists]
+ *    parameters:
+ *      - name: listId
+ *        in: path
+ *        required: true
+ *        schema:
+ *          type: string
+ *    requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            required: [name]
+ *            properties:
+ *              name:
+ *                type: string
+ *    responses:
+ *      200:
+ *        description: Renamed list
+ *      400:
+ *        description: Invalid list id or name, or the list is personal
+ *      401:
+ *        description: Not logged in
+ *      403:
+ *        description: Not the list owner
+ *      404:
+ *        description: List not found
+ */
+listRouter.patch(
+  "/:listId",
+  validateParams(listIdSchema),
+  requireListAccess,
+  // Same rules as creating a list
+  validateBody(createListSchema),
+  listController.renameList,
+);
+
+/**
+ * @openapi
+ * /lists/{listId}:
+ *  delete:
+ *    summary: Delete a list and its tasks (list owner only)
+ *    tags: [Lists]
+ *    parameters:
+ *      - name: listId
+ *        in: path
+ *        required: true
+ *        schema:
+ *          type: string
+ *    responses:
+ *      204:
+ *        description: Deleted
+ *      400:
+ *        description: Invalid list id, or the list is personal
+ *      401:
+ *        description: Not logged in
+ *      403:
+ *        description: Not the list owner
+ *      404:
+ *        description: List not found
+ */
+listRouter.delete(
+  "/:listId",
+  validateParams(listIdSchema),
+  requireListAccess,
+  listController.deleteList,
+);

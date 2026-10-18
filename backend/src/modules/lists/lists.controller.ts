@@ -56,8 +56,49 @@ const addMember = async (
   res.json(updated);
 };
 
+const renameList = async (
+  req: Request<ListIdInput, unknown, CreateListInput>,
+  res: Response,
+) => {
+  // Set by `requireListAccess`
+  const list: ListDocument = res.locals.list;
+
+  if (!list.owner.equals(req.session.userId!)) {
+    return res
+      .status(403)
+      .json({ message: "Only the list owner can rename it" });
+  }
+
+  if (list.personal) {
+    return res.status(400).json({ message: "Personal lists can't be renamed" });
+  }
+
+  const updated = await listService.renameList(list.id, req.body.name);
+  res.json(updated);
+};
+
+const deleteList = async (req: Request<ListIdInput>, res: Response) => {
+  // Set by `requireListAccess`
+  const list: ListDocument = res.locals.list;
+
+  if (!list.owner.equals(req.session.userId!)) {
+    return res
+      .status(403)
+      .json({ message: "Only the list owner can delete it" });
+  }
+
+  if (list.personal) {
+    return res.status(400).json({ message: "Personal lists can't be deleted" });
+  }
+
+  await listService.deleteList(list.id);
+  res.status(204).end();
+};
+
 export const listController = {
   getLists,
   createList,
   addMember,
+  renameList,
+  deleteList,
 };
