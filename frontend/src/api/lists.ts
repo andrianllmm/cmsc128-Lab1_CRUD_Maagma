@@ -15,3 +15,12 @@ export const addMember = (listId: string, data: AddMemberInput) =>
     method: "POST",
     body: JSON.stringify(data),
   });
+
+export const renameList = (listId: string, data: CreateListInput) =>
+  apiFetch<List>(`lists/${listId}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+
+export const deleteList = (listId: string) =>
+  apiFetch<void>(`lists/${listId}`, { method: "DELETE" });

@@ -47,6 +47,28 @@ export function useLists() {
     onError: (err) => toast.error(err.message || "Failed to add member"),
   });
 
+  const renameMutation = useMutation({
+    mutationFn: ({ listId, data }: { listId: string; data: CreateListInput }) =>
+      listsApi.renameList(listId, data),
+    onSuccess: (updated) =>
+      queryClient.setQueryData(listsQueryOptions.queryKey, (lists) =>
+        lists?.map((l) => (l._id === updated._id ? updated : l)),
+      ),
+    onError: (err) => toast.error(err.message || "Failed to rename list"),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: listsApi.deleteList,
+    onSuccess: (_, listId) => {
+      queryClient.setQueryData(listsQueryOptions.queryKey, (lists) =>
+        lists?.filter((l) => l._id !== listId),
+      );
+      // Its tasks were deleted with it
+      queryClient.removeQueries({ queryKey: ["tasks", listId] });
+    },
+    onError: (err) => toast.error(err.message || "Failed to delete list"),
+  });
+
   /**
    * Creates a collaborative list.
    * Returns the new list, or `null` on failure.
@@ -75,5 +97,34 @@ export function useLists() {
     }
   }
 
-  return { lists, createList, addMember };
+  /**
+   * Renames a list. Only the list owner can.
+   * Returns `false` on failure.
+   * */
+  async function renameList(
+    listId: string,
+    data: CreateListInput,
+  ): Promise<boolean> {
+    try {
+      await renameMutation.mutateAsync({ listId, data });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Deletes a list and its tasks. Only the list owner can.
+   * Returns `false` on failure.
+   * */
+  async function deleteList(listId: string): Promise<boolean> {
+    try {
+      await deleteMutation.mutateAsync(listId);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  return { lists, createList, addMember, renameList, deleteList };
 }

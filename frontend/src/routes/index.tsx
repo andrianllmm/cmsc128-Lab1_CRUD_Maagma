@@ -5,6 +5,7 @@ import { TaskForm } from "@/components/task-form";
 import { ListSwitcher } from "@/components/list-switcher";
 import { NewListDialog } from "@/components/new-list-dialog";
 import { ListMembersDialog } from "@/components/list-members-dialog";
+import { ListActionsMenu } from "@/components/list-actions-menu";
 import { listsQueryOptions, useLists } from "@/hooks/useLists";
 import { useTasks } from "@/hooks/useTasks";
 import { useTaskView } from "@/hooks/useTaskView";
@@ -27,7 +28,7 @@ function TasksPage() {
   const { user } = Route.useRouteContext();
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
-  const { lists, createList, addMember } = useLists();
+  const { lists, createList, addMember, renameList, deleteList } = useLists();
   // Falls back to the personal list, which comes first, if the selected one isn't accessible
   const list = lists.find((l) => l._id === search.list) ?? lists[0];
   const listId = list._id;
@@ -41,6 +42,11 @@ function TasksPage() {
     const created = await createList(data);
     if (created) selectList(created._id);
     return !!created;
+  }
+
+  // Goes back to the personal list once deleted
+  async function handleDeleteList() {
+    if (await deleteList(listId)) navigate({ search: {} });
   }
   const { tasks, loading, error, createTask, updateTask, deleteTask } =
     useTasks(listId);
@@ -72,6 +78,14 @@ function TasksPage() {
             list={list}
             isOwner={list.owner._id === user._id}
             onAddMember={(data) => addMember(listId, data)}
+          />
+        )}
+        {/* Only the owner can rename or delete a shared list */}
+        {!list.personal && list.owner._id === user._id && (
+          <ListActionsMenu
+            list={list}
+            onRename={(data) => renameList(listId, data)}
+            onDelete={handleDeleteList}
           />
         )}
         <NewListDialog onSubmit={handleCreateList} />
