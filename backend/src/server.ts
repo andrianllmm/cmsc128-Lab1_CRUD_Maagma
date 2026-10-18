@@ -26,7 +26,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use("/api/auth", authRouter);
 app.use("/api/lists", listRouter);
-app.use("/api/tasks", taskRouter);
+app.use("/api/lists/:listId/tasks", taskRouter);
 app.use("/api/users", userRouter);
 
 /**
