@@ -4,9 +4,11 @@ import { TaskToolbar } from "@/components/task-toolbar";
 import { TaskForm } from "@/components/task-form";
 import { useTasks } from "@/hooks/useTasks";
 import { useTaskView } from "@/hooks/useTaskView";
+import { requireAuth } from "@/lib/auth";
 import type { Task } from "@/types/tasks";
 
 export const Route = createFileRoute("/")({
+  beforeLoad: requireAuth,
   component: TasksPage,
 });
 
