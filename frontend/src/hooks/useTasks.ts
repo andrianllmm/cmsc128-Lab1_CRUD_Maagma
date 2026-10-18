@@ -9,12 +9,14 @@ import { toast } from "sonner";
 import type { CreateTaskInput, UpdateTaskInput } from "@/schemas/tasks";
 import * as tasksApi from "@/api/tasks";
 
-export const tasksQueryOptions = queryOptions({
-  queryKey: ["tasks"],
-  queryFn: tasksApi.getTasks,
-});
+// Tasks of one list, cached per list
+export const tasksQueryOptions = (listId: string) =>
+  queryOptions({
+    queryKey: ["tasks", listId],
+    queryFn: () => tasksApi.getTasks(listId),
+  });
 
-export function useTasks() {
+export function useTasks(listId: string) {
   const queryClient = useQueryClient();
 
   // Tasks hidden from the list but not yet deleted server-side
@@ -23,32 +25,34 @@ export function useTasks() {
   );
 
   const { data, isPending, error } = useQuery({
-    ...tasksQueryOptions,
+    ...tasksQueryOptions(listId),
     // Hide pending deletes
     select: (tasks) => tasks.filter((t) => !pendingDeletes.has(t._id)),
   });
 
   const invalidateTasks = () =>
-    queryClient.invalidateQueries({ queryKey: tasksQueryOptions.queryKey });
+    queryClient.invalidateQueries({
+      queryKey: tasksQueryOptions(listId).queryKey,
+    });
 
   const createMutation = useMutation({
-    mutationFn: tasksApi.createTask,
+    mutationFn: (data: CreateTaskInput) => tasksApi.createTask(listId, data),
     onSuccess: invalidateTasks,
     onError: (err) => toast.error(err.message || "Failed to create task"),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateTaskInput }) =>
-      tasksApi.updateTask(id, data),
+      tasksApi.updateTask(listId, id, data),
     onSuccess: invalidateTasks,
     onError: (err) => toast.error(err.message || "Failed to update task"),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: tasksApi.deleteTask,
+    mutationFn: (id: string) => tasksApi.deleteTask(listId, id),
     onSuccess: (_, id) => {
       // Drop the task from the cache before it stops being hidden
-      queryClient.setQueryData(tasksQueryOptions.queryKey, (tasks) =>
+      queryClient.setQueryData(tasksQueryOptions(listId).queryKey, (tasks) =>
         tasks?.filter((t) => t._id !== id),
       );
     },

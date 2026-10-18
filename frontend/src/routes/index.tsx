@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { TaskList } from "@/components/task-list";
 import { TaskToolbar } from "@/components/task-toolbar";
 import { TaskForm } from "@/components/task-form";
+import { listsQueryOptions, useLists } from "@/hooks/useLists";
 import { useTasks } from "@/hooks/useTasks";
 import { useTaskView } from "@/hooks/useTaskView";
 import { requireAuth } from "@/lib/auth";
@@ -9,12 +10,17 @@ import type { Task } from "@/types/tasks";
 
 export const Route = createFileRoute("/")({
   beforeLoad: requireAuth,
+  loader: ({ context }) =>
+    context.queryClient.ensureQueryData(listsQueryOptions),
   component: TasksPage,
 });
 
 function TasksPage() {
+  const { lists } = useLists();
+  // The personal list comes first
+  const listId = lists[0]._id;
   const { tasks, loading, error, createTask, updateTask, deleteTask } =
-    useTasks();
+    useTasks(listId);
   const {
     visibleTasks,
     sortBy,
