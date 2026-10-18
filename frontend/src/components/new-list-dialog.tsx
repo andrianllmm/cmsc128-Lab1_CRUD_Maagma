@@ -1,12 +1,8 @@
 import { useState } from "react";
-import { useForm } from "@tanstack/react-form";
-import type { z } from "zod";
-import { Loader2Icon, PlusIcon } from "lucide-react";
-import { createListSchema, type CreateListInput } from "@/schemas/lists";
-import { LIST_NAME_MAX_LENGTH } from "@/types/lists";
+import { PlusIcon } from "lucide-react";
+import type { CreateListInput } from "@/schemas/lists";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { FormField } from "@/components/ui/form-field";
+import { ListNameForm } from "@/components/list-name-form";
 import {
   Dialog,
   DialogContent,
@@ -20,25 +16,8 @@ interface NewListDialogProps {
   onSubmit: (data: CreateListInput) => Promise<boolean>;
 }
 
-type NewListFormValues = z.input<typeof createListSchema>;
-
 export function NewListDialog({ onSubmit }: NewListDialogProps) {
   const [open, setOpen] = useState(false);
-  const defaultValues: NewListFormValues = { name: "" };
-
-  const form = useForm({
-    defaultValues,
-    validators: {
-      onSubmit: createListSchema,
-    },
-    onSubmit: async ({ value }) => {
-      const data = createListSchema.parse(value);
-      if (await onSubmit(data)) {
-        form.reset();
-        setOpen(false);
-      }
-    },
-  });
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -64,46 +43,14 @@ export function NewListDialog({ onSubmit }: NewListDialogProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            form.handleSubmit();
+        <ListNameForm
+          submitLabel="Create list"
+          onSubmit={async (data) => {
+            const ok = await onSubmit(data);
+            if (ok) setOpen(false);
+            return ok;
           }}
-          className="flex flex-col gap-4"
-        >
-          <form.Field name="name">
-            {(field) => (
-              <FormField
-                htmlFor="listName"
-                label="Name"
-                error={field.state.meta.errors[0]?.message}
-              >
-                <Input
-                  id="listName"
-                  placeholder="e.g. Group project"
-                  maxLength={LIST_NAME_MAX_LENGTH}
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-              </FormField>
-            )}
-          </form.Field>
-
-          <form.Subscribe selector={(state) => state.isSubmitting}>
-            {(isSubmitting) => (
-              <Button
-                type="submit"
-                className="self-end"
-                disabled={isSubmitting}
-              >
-                {isSubmitting && <Loader2Icon className="animate-spin" />}
-                Create list
-              </Button>
-            )}
-          </form.Subscribe>
-        </form>
+        />
       </DialogContent>
     </Dialog>
   );
