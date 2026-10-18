@@ -1,6 +1,13 @@
 import { ListModel, type ListDocument } from "./lists.model.js";
 import { PERSONAL_LIST_NAME } from "./lists.constants.js";
 
+// Only the user fields needed to show who's in a list; never the password hash
+const USER_FIELDS = "displayName email";
+const withUsers = [
+  { path: "owner", select: USER_FIELDS },
+  { path: "members", select: USER_FIELDS },
+];
+
 // Lists a user can access: ones they own or were added to
 const accessibleBy = (userId: string) => ({
   $or: [{ owner: userId }, { members: userId }],
@@ -8,10 +15,9 @@ const accessibleBy = (userId: string) => ({
 
 const getLists = async (userId: string): Promise<ListDocument[]> => {
   // Personal list first, then oldest first
-  return ListModel.find(accessibleBy(userId)).sort({
-    personal: -1,
-    createdAt: 1,
-  });
+  return ListModel.find(accessibleBy(userId))
+    .sort({ personal: -1, createdAt: 1 })
+    .populate(withUsers);
 };
 
 /**
@@ -29,7 +35,8 @@ const createList = async (
   userId: string,
   name: string,
 ): Promise<ListDocument> => {
-  return ListModel.create({ name, owner: userId });
+  const list = await ListModel.create({ name, owner: userId });
+  return list.populate(withUsers);
 };
 
 const createPersonalList = async (userId: string): Promise<ListDocument> => {
