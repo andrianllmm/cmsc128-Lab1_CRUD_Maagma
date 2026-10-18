@@ -15,7 +15,7 @@ function LoginPage() {
 
   async function handleLogin(data: LoginInput) {
     const ok = await login(data);
-    if (ok) navigate({ to: "/profile", replace: true });
+    if (ok) navigate({ to: "/", replace: true });
     return ok;
   }
 
