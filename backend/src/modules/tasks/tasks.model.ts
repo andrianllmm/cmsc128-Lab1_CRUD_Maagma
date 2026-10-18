@@ -3,6 +3,13 @@ import { PRIORITIES, TAGS, TITLE_MAX_LENGTH } from "./tasks.constants.js";
 
 const taskSchema = new Schema(
   {
+    // The user who created the task
+    owner: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
     title: {
       type: String,
       required: true,
