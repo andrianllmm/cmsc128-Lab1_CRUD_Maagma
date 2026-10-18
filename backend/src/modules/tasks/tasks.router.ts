@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import { taskController } from "./tasks.controller.js";
+import { requireAuth } from "../../middleware/auth.js";
 import { validateBody, validateParams } from "../../middleware/validate.js";
 import {
   createTaskSchema,
@@ -9,6 +10,8 @@ import {
 } from "./tasks.schema.js";
 
 export const taskRouter: Router = Router();
+
+taskRouter.use(requireAuth);
 
 /**
  * @openapi
@@ -19,6 +22,8 @@ export const taskRouter: Router = Router();
  *    responses:
  *      200:
  *        description: List of tasks
+ *      401:
+ *        description: Not logged in
  */
 taskRouter.get("/", taskController.getTasks);
 
@@ -39,6 +44,8 @@ taskRouter.get("/", taskController.getTasks);
  *        description: A task
  *      400:
  *        description: Invalid task id
+ *      401:
+ *        description: Not logged in
  *      404:
  *        description: Task not found
  */
@@ -78,6 +85,8 @@ taskRouter.get(
  *        description: Created task
  *      400:
  *        description: Invalid task data
+ *      401:
+ *        description: Not logged in
  */
 taskRouter.post("/", validateBody(createTaskSchema), taskController.createTask);
 
@@ -118,6 +127,8 @@ taskRouter.post("/", validateBody(createTaskSchema), taskController.createTask);
  *        description: Updated task
  *      400:
  *        description: Invalid task id or data
+ *      401:
+ *        description: Not logged in
  *      404:
  *        description: Task not found
  */
@@ -145,6 +156,8 @@ taskRouter.patch(
  *        description: Deleted task
  *      400:
  *        description: Invalid task id
+ *      401:
+ *        description: Not logged in
  *      404:
  *        description: Task not found
  */
