@@ -5,20 +5,27 @@ import morgan from "morgan";
 import swaggerUi from "swagger-ui-express";
 import { connectDB } from "./config/db.js";
 import { env } from "./config/env.js";
+import { sessionMiddleware } from "./config/session.js";
 import { swaggerSpec } from "./config/swagger.js";
 import { errorHandler, notFound } from "./middleware/error.js";
 
+import { authRouter } from "./modules/auth/auth.router.js";
 import { taskRouter } from "./modules/tasks/tasks.router.js";
+import { userRouter } from "./modules/users/users.router.js";
 
 const app = express();
 
 app.use(morgan(env.NODE_ENV === "production" ? "tiny" : "dev"));
-app.use(cors({ origin: env.CORS_ORIGIN }));
+// Allow the frontend to send the session cookie
+app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
 app.use(express.json());
+app.use(sessionMiddleware);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+app.use("/api/auth", authRouter);
 app.use("/api/tasks", taskRouter);
+app.use("/api/users", userRouter);
 
 /**
  * @openapi
