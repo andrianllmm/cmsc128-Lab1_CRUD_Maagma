@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { TaskList } from "@/components/task-list";
 import { TaskToolbar } from "@/components/task-toolbar";
 import { TaskForm } from "@/components/task-form";
+import { ListSwitcher } from "@/components/list-switcher";
 import { listsQueryOptions, useLists } from "@/hooks/useLists";
 import { useTasks } from "@/hooks/useTasks";
 import { useTaskView } from "@/hooks/useTaskView";
@@ -9,6 +10,10 @@ import { requireAuth } from "@/lib/auth";
 import type { Task } from "@/types/tasks";
 
 export const Route = createFileRoute("/")({
+  // The selected list, kept in the URL so it survives refreshes
+  validateSearch: (search): { list?: string } => ({
+    list: typeof search.list === "string" ? search.list : undefined,
+  }),
   beforeLoad: requireAuth,
   loader: ({ context }) =>
     context.queryClient.ensureQueryData(listsQueryOptions),
@@ -16,9 +21,13 @@ export const Route = createFileRoute("/")({
 });
 
 function TasksPage() {
+  const { user } = Route.useRouteContext();
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
   const { lists } = useLists();
-  // The personal list comes first
-  const listId = lists[0]._id;
+  // Falls back to the personal list, which comes first, if the selected one isn't accessible
+  const list = lists.find((l) => l._id === search.list) ?? lists[0];
+  const listId = list._id;
   const { tasks, loading, error, createTask, updateTask, deleteTask } =
     useTasks(listId);
   const {
@@ -36,6 +45,13 @@ function TasksPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col gap-10 px-4 py-8 sm:px-6">
+      <ListSwitcher
+        lists={lists}
+        listId={listId}
+        userId={user._id}
+        onChange={(id) => navigate({ search: { list: id } })}
+      />
+
       <TaskForm onSubmit={createTask} />
 
       <section aria-labelledby="tasks-heading" className="flex flex-col gap-4">
