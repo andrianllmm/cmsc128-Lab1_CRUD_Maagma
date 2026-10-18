@@ -5,6 +5,7 @@ import type { ListIdInput } from "../modules/lists/lists.schema.js";
 /**
  * Rejects requests for a list the logged-in user doesn't own or belong to.
  * Responds with 404 so other users' lists aren't revealed.
+ * Otherwise stores the list in `res.locals.list`.
  * */
 export const requireListAccess = async (
   req: Request<ListIdInput>,
@@ -18,5 +19,6 @@ export const requireListAccess = async (
   if (!list) {
     return res.status(404).json({ message: "List not found" });
   }
+  res.locals.list = list;
   next();
 };

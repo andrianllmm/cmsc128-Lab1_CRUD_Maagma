@@ -47,9 +47,21 @@ const createPersonalList = async (userId: string): Promise<ListDocument> => {
   });
 };
 
+const addMember = async (
+  listId: string,
+  memberId: string,
+): Promise<ListDocument | null> => {
+  return ListModel.findByIdAndUpdate(
+    listId,
+    { $addToSet: { members: memberId } },
+    { returnDocument: "after" },
+  ).populate(withUsers);
+};
+
 export const listService = {
   getLists,
   getListById,
   createList,
   createPersonalList,
+  addMember,
 };
