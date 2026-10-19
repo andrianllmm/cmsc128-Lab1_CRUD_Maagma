@@ -15,6 +15,14 @@ A to-do list app built with the MERN stack.
 - Sort by date added, due date, priority, or tag (ascending or descending), and filter by tag and priority, client-side (`frontend/src/hooks/useTaskView.ts`).
 - Tasks persist in MongoDB across browser refreshes and server restarts.
 
+### Lists
+
+- Each account gets a Personal list on registration.
+- Create, rename, and delete collaborative lists.
+- Add users to a list by email.
+- Switch between your lists and lists you were added to.
+- Shared lists show who created each task.
+
 ### Accounts
 
 - Register, log in, and log out.
@@ -56,8 +64,9 @@ Server-side sessions can be revoked immediately (on logout or password change), 
 │   └── src/
 │       ├── config/          # env, db connection, sessions, swagger setup
 │       ├── lib/             # password hashing, email sending
-│       ├── middleware/      # request validation, auth guard, errors
-│       ├── modules/         # feature modules: auth, users, tasks (model, schema, controller, service, router)
+│       ├── middleware/      # request validation, auth guard, list access check, errors
+│       ├── modules/         # feature modules: auth, users, lists, tasks (model, schema, controller, service, router)
+│       ├── scripts/         # demo task seeder
 │       └── server.ts        # Express app entry point
 ├── frontend/
 │   └── src/
@@ -120,7 +129,15 @@ cd frontend
 pnpm dev
 ```
 
-No migrations or seeds are needed; collections and indexes are created automatically.
+No migrations are needed; collections and indexes are created automatically.
+
+### Demo Data
+
+Register the accounts in the app, then seed their Personal lists:
+
+```
+pnpm seed alice@example.com bob@example.com
+```
 
 ## Verify
 
@@ -130,18 +147,15 @@ No migrations or seeds are needed; collections and indexes are created automatic
 
 ## Data Model
 
-### Task
+Users, lists, and tasks are separate collections linked by ObjectId.
 
-| Field       | Type     | Notes                                               |
-| ----------- | -------- | --------------------------------------------------- |
-| `_id`       | ObjectId | assigned by MongoDB, used to identify each task     |
-| `title`     | String   | required                                            |
-| `dueDate`   | Date     | optional                                            |
-| `priority`  | String   | `Low`, `Medium`, `High`, or `None` (default)        |
-| `tag`       | String   | `Work`, `School`, `Personal`, or `Others` (default) |
-| `done`      | Boolean  | defaults to `false`                                 |
-| `createdAt` | Date     | set automatically by Mongoose timestamps            |
-| `updatedAt` | Date     | set automatically by Mongoose timestamps            |
+```mermaid
+erDiagram
+    User ||--o{ List : owns
+    User }o--o{ List : "member of"
+    List ||--o{ Task : contains
+    User ||--o{ Task : creates
+```
 
 ### User
 
@@ -152,19 +166,58 @@ No migrations or seeds are needed; collections and indexes are created automatic
 | `displayName`  | String   | required                                     |
 | `passwordHash` | String   | Argon2id hash; never returned by the API     |
 
+### List
+
+| Field       | Type       | Notes                                     |
+| ----------- | ---------- | ----------------------------------------- |
+| `_id`       | ObjectId   | assigned by MongoDB                       |
+| `name`      | String     | required                                  |
+| `owner`     | ObjectId   | ref `User`                                |
+| `members`   | ObjectId[] | ref `User`, users the list is shared with |
+| `personal`  | Boolean    | `true` for the user's Personal list       |
+| `createdAt` | Date       | set automatically by Mongoose timestamps  |
+| `updatedAt` | Date       | set automatically by Mongoose timestamps  |
+
+### Task
+
+| Field       | Type     | Notes                                               |
+| ----------- | -------- | --------------------------------------------------- |
+| `_id`       | ObjectId | assigned by MongoDB, used to identify each task     |
+| `list`      | ObjectId | ref `List`                                          |
+| `owner`     | ObjectId | ref `User`, who created the task                    |
+| `title`     | String   | required                                            |
+| `dueDate`   | Date     | optional                                            |
+| `priority`  | String   | `Low`, `Medium`, `High`, or `None` (default)        |
+| `tag`       | String   | `Work`, `School`, `Personal`, or `Others` (default) |
+| `done`      | Boolean  | defaults to `false`                                 |
+| `createdAt` | Date     | set automatically by Mongoose timestamps            |
+| `updatedAt` | Date     | set automatically by Mongoose timestamps            |
+
 ## API Endpoints
 
 All routes are prefixed with `/api` and validated with Zod before reaching the database. Full request/response schemas are available at `/api-docs`.
 
+### Lists
+
+| Method | Endpoint                     | Description                         | Who   |
+| ------ | ---------------------------- | ----------------------------------- | ----- |
+| GET    | `/api/lists`                 | Lists the user owns or was added to | Any   |
+| POST   | `/api/lists`                 | Create a list                       | Any   |
+| PATCH  | `/api/lists/:listId`         | Rename a list                       | Owner |
+| DELETE | `/api/lists/:listId`         | Delete a list and its tasks         | Owner |
+| POST   | `/api/lists/:listId/members` | Add a user by email                 | Owner |
+
 ### Tasks
 
-| Method | Endpoint         | Description                                            |
-| ------ | ---------------- | ------------------------------------------------------ |
-| GET    | `/api/tasks`     | List all tasks                                         |
-| GET    | `/api/tasks/:id` | Get a single task by id                                |
-| POST   | `/api/tasks`     | Create a task                                          |
-| PATCH  | `/api/tasks/:id` | Update a task (any subset of fields, including `done`) |
-| DELETE | `/api/tasks/:id` | Delete a task                                          |
+Require access to the list (owner or member).
+
+| Method | Endpoint                       | Description                                            |
+| ------ | ------------------------------ | ------------------------------------------------------ |
+| GET    | `/api/lists/:listId/tasks`     | List tasks                                             |
+| GET    | `/api/lists/:listId/tasks/:id` | Get a single task by id                                |
+| POST   | `/api/lists/:listId/tasks`     | Create a task                                          |
+| PATCH  | `/api/lists/:listId/tasks/:id` | Update a task (any subset of fields, including `done`) |
+| DELETE | `/api/lists/:listId/tasks/:id` | Delete a task                                          |
 
 Example create request body:
 
@@ -218,6 +271,63 @@ On login, the backend stores a session (with the user's ID) in MongoDB's `sessio
 Requesting a reset emails a link with a random token that expires in 30 minutes. Only the token's hash is stored, and it's cleared once used. Setting a new password replaces the hash, so the old password stops working.
 
 If SMTP isn't configured, the email is printed to the backend terminal instead. This is for local development only: anyone with access to the server logs could use the link. The backend requires SMTP when `NODE_ENV=production`.
+
+## Access Control
+
+All checks run on the backend. The user ID comes from the session, never the request.
+
+Every task route runs (`backend/src/modules/tasks/tasks.router.ts`):
+
+```ts
+taskRouter.use(requireAuth, validateParams(listIdSchema), requireListAccess);
+```
+
+- `requireAuth`: no session → 401.
+- `requireListAccess`: finds the list only if the user is its owner or a member, else 404.
+
+  ```ts
+  // backend/src/modules/lists/lists.service.ts
+  const accessibleBy = (userId: string) => ({
+    $or: [{ owner: userId }, { members: userId }],
+  });
+  ListModel.findOne({ _id: id, ...accessibleBy(userId) });
+  ```
+
+- Task queries filter by that list, so a task from another list → 404.
+
+  ```ts
+  // backend/src/modules/tasks/tasks.service.ts
+  TaskModel.findOneAndUpdate({ _id: id, list: listId }, data);
+  ```
+
+- Rename, delete, and add member also check `list.owner` → 403 (`backend/src/modules/lists/lists.controller.ts`).
+
+`GET /api/lists` uses the same `accessibleBy` filter, so users only see lists they own or were added to.
+
+IDOR examples:
+
+| Request (as Alice)                                   | Result |
+| ---------------------------------------------------- | ------ |
+| `GET /api/lists/<Bob's list>/tasks`                  | 404    |
+| `PATCH /api/lists/<Alice's list>/tasks/<Bob's task>` | 404    |
+| `POST /api/lists/<Bob's list Alice is in>/members`   | 403    |
+
+## Merging Activities 1 and 2
+
+- `main`: Activity 1.
+- `act2-accounts`: Activity 2, branched from `main`.
+- `act3-ubac`: branched from `main`, merged `act2-accounts` (`15dc847`), then feature PRs:
+  - #78 `feat/task-ownership`: task owner, auth on task routes.
+  - #79 `feat/todo-after-login`: redirect to the to-do list after login.
+  - #80 `feat/lists`: lists, members, Personal list.
+  - #81 `feat/seed-tasks`: demo seeder.
+
+The merge had no Git conflicts, since `main` didn't change after `act2-accounts` branched. Integration issues fixed afterward:
+
+- Tasks had no owner: added `owner` and `list` fields and filtered every query by them.
+- Task routes were public: added `requireAuth` and `requireListAccess`, moved to `/api/lists/:listId/tasks`.
+- Login went to the profile page: now goes to the to-do list.
+- Cached tasks could carry over between accounts: cache now clears on login, not just logout.
 
 ## Screenshots
 
