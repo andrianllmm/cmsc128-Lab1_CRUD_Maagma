@@ -27,7 +27,12 @@ export const sessionMiddleware: RequestHandler = session({
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
-    mongoUrl: env.MONGODB_URI,
+    // Reuses Mongoose's connection instead of opening a second pool
+    clientPromise: new Promise((resolve) =>
+      mongoose.connection.once("open", () =>
+        resolve(mongoose.connection.getClient()),
+      ),
+    ),
     collectionName: SESSIONS_COLLECTION,
     // Stored as objects instead of JSON strings, so sessions can be queried by `userId`
     stringify: false,
@@ -44,6 +49,16 @@ export const sessionMiddleware: RequestHandler = session({
     maxAge: SESSION_MAX_AGE_MS,
   },
 });
+
+/**
+ * Indexes sessions by user, so logging out a user's sessions doesn't scan every session.
+ * The store only creates its own TTL index.
+ * */
+export const createSessionIndexes = async (): Promise<void> => {
+  await mongoose.connection
+    .collection(SESSIONS_COLLECTION)
+    .createIndex({ "session.userId": 1 });
+};
 
 /**
  * Deletes a user's sessions from the store, logging them out.

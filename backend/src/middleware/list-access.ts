@@ -12,7 +12,7 @@ export const requireListAccess = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const list = await listService.getListById(
+  const list = await listService.findAccessibleList(
     req.session.userId!,
     req.params.listId,
   );

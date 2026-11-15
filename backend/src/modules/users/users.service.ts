@@ -30,6 +30,11 @@ const findByEmail = async (email: string): Promise<UserDocument | null> => {
   return UserModel.findOne({ email });
 };
 
+// Only the ID, for when the rest of the user isn't needed
+const findIdByEmail = async (email: string) => {
+  return UserModel.exists({ email });
+};
+
 const findByEmailWithPassword = async (email: string) => {
   return UserModel.findOne({ email }).select("+passwordHash");
 };
@@ -53,7 +58,7 @@ const createUser = async (
   try {
     return await UserModel.create(data);
   } catch (err) {
-    // Unique index catches concurrent signups that passed `findByEmail`
+    // Unique index rejects emails that are already taken
     if (isDuplicateKeyError(err)) return null;
     throw err;
   }
@@ -106,10 +111,15 @@ const updateResetToken = async (
   });
 };
 
+const deleteUser = async (id: string): Promise<void> => {
+  await UserModel.findByIdAndDelete(id);
+};
+
 export const userService = {
   findById,
   findByIdWithPassword,
   findByEmail,
+  findIdByEmail,
   findByEmailWithPassword,
   findByValidResetToken,
   createUser,
@@ -117,4 +127,5 @@ export const userService = {
   updateEmail,
   updatePasswordHash,
   updateResetToken,
+  deleteUser,
 };

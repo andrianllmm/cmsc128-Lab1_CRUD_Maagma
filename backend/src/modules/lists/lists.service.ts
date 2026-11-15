@@ -1,4 +1,9 @@
-import { ListModel, type ListDocument } from "./lists.model.js";
+import type { Types } from "mongoose";
+import {
+  ListModel,
+  type ListAccess,
+  type ListDocument,
+} from "./lists.model.js";
 import { TaskModel } from "../tasks/tasks.model.js";
 import { PERSONAL_LIST_NAME } from "./lists.constants.js";
 
@@ -9,27 +14,32 @@ const withUsers = [
   { path: "members", select: USER_FIELDS },
 ];
 
+// Reads use `.lean()`: responses only need plain JSON, not full Mongoose documents
+
 // Lists a user can access: ones they own or were added to
 const accessibleBy = (userId: string) => ({
   $or: [{ owner: userId }, { members: userId }],
 });
 
-const getLists = async (userId: string): Promise<ListDocument[]> => {
+const getLists = async (userId: string) => {
   // Personal list first, then oldest first
   return ListModel.find(accessibleBy(userId))
     .sort({ personal: -1, createdAt: 1 })
-    .populate(withUsers);
+    .populate(withUsers)
+    .lean();
 };
 
 /**
- * Finds a list the user can access.
+ * Finds a list the user can access, with only the fields access checks need.
  * Returns `null` if it doesn't exist or the user isn't its owner or a member.
  * */
-const getListById = async (
+const findAccessibleList = async (
   userId: string,
   id: string,
-): Promise<ListDocument | null> => {
-  return ListModel.findOne({ _id: id, ...accessibleBy(userId) });
+): Promise<ListAccess | null> => {
+  return ListModel.findOne({ _id: id, ...accessibleBy(userId) })
+    .select("owner members personal")
+    .lean();
 };
 
 const createList = async (
@@ -48,37 +58,39 @@ const createPersonalList = async (userId: string): Promise<ListDocument> => {
   });
 };
 
-const addMember = async (
-  listId: string,
-  memberId: string,
-): Promise<ListDocument | null> => {
+const addMember = async (listId: Types.ObjectId, memberId: Types.ObjectId) => {
   return ListModel.findByIdAndUpdate(
     listId,
     { $addToSet: { members: memberId } },
     { returnDocument: "after" },
-  ).populate(withUsers);
+  )
+    .populate(withUsers)
+    .lean();
 };
 
-const renameList = async (
-  listId: string,
-  name: string,
-): Promise<ListDocument | null> => {
+const renameList = async (listId: Types.ObjectId, name: string) => {
   return ListModel.findByIdAndUpdate(
     listId,
     { name },
     { returnDocument: "after", runValidators: true },
-  ).populate(withUsers);
+  )
+    .populate(withUsers)
+    .lean();
 };
 
-// Deletes the list along with its tasks
-const deleteList = async (listId: string): Promise<void> => {
+/**
+ * Deletes the list along with its tasks.
+ * Tasks go first: if this fails partway, the list still exists, so deleting it
+ * again finishes the job instead of leaving tasks no one can reach.
+ * */
+const deleteList = async (listId: Types.ObjectId): Promise<void> => {
   await TaskModel.deleteMany({ list: listId });
   await ListModel.findByIdAndDelete(listId);
 };
 
 export const listService = {
   getLists,
-  getListById,
+  findAccessibleList,
   createList,
   createPersonalList,
   addMember,

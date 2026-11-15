@@ -3,6 +3,7 @@ import { Router } from "express";
 import { listController } from "./lists.controller.js";
 import { requireAuth } from "../../middleware/auth.js";
 import { requireListAccess } from "../../middleware/list-access.js";
+import { requireListOwner } from "../../middleware/list-owner.js";
 import { validateBody, validateParams } from "../../middleware/validate.js";
 import {
   addMemberSchema,
@@ -94,6 +95,7 @@ listRouter.post(
   "/:listId/members",
   validateParams(listIdSchema),
   requireListAccess,
+  requireListOwner("share"),
   validateBody(addMemberSchema),
   listController.addMember,
 );
@@ -136,6 +138,7 @@ listRouter.patch(
   "/:listId",
   validateParams(listIdSchema),
   requireListAccess,
+  requireListOwner("rename"),
   // Same rules as creating a list
   validateBody(createListSchema),
   listController.renameList,
@@ -169,5 +172,6 @@ listRouter.delete(
   "/:listId",
   validateParams(listIdSchema),
   requireListAccess,
+  requireListOwner("delete"),
   listController.deleteList,
 );
