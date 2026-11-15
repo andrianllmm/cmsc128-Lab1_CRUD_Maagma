@@ -45,6 +45,8 @@ export const authRouter: Router = Router();
  *        description: Invalid registration data
  *      409:
  *        description: Email already in use
+ *      429:
+ *        description: Too many attempts
  */
 authRouter.post(
   "/register",
@@ -80,6 +82,8 @@ authRouter.post(
  *        description: Invalid login data
  *      401:
  *        description: Invalid credentials
+ *      429:
+ *        description: Too many attempts
  */
 authRouter.post(
   "/login",
@@ -137,6 +141,8 @@ authRouter.get("/me", requireAuth, authController.me);
  *        description: Reset link sent if the account exists
  *      400:
  *        description: Invalid email
+ *      429:
+ *        description: Too many attempts
  */
 authRouter.post(
   "/forgot-password",
@@ -169,6 +175,8 @@ authRouter.post(
  *        description: Password reset
  *      400:
  *        description: Invalid data, or the reset token is invalid or expired
+ *      429:
+ *        description: Too many attempts
  */
 authRouter.post(
   "/reset-password",

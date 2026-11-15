@@ -73,6 +73,8 @@ userRouter.patch(
  *        description: Not logged in
  *      409:
  *        description: Email already in use
+ *      429:
+ *        description: Too many attempts
  */
 userRouter.patch(
   "/me/email",
@@ -108,6 +110,8 @@ userRouter.patch(
  *        description: Invalid new password or incorrect current password
  *      401:
  *        description: Not logged in
+ *      429:
+ *        description: Too many attempts
  */
 userRouter.patch(
   "/me/password",
