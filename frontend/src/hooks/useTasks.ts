@@ -37,14 +37,23 @@ export function useTasks(listId: string) {
 
   const createMutation = useMutation({
     mutationFn: (data: CreateTaskInput) => tasksApi.createTask(listId, data),
-    onSuccess: invalidateTasks,
+    onSuccess: (task) => {
+      // The new task may be hidden by filters, so say it was added
+      toast.success(`Added "${task.title}"`);
+      return invalidateTasks();
+    },
     onError: (err) => toast.error(err.message || "Failed to create task"),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateTaskInput }) =>
       tasksApi.updateTask(listId, id, data),
-    onSuccess: invalidateTasks,
+    onSuccess: (task, { data }) => {
+      // Checking a task off is already visible; other edits happen in a dialog that closes
+      const onlyToggledDone = Object.keys(data).join() === "done";
+      if (!onlyToggledDone) toast.success(`Saved "${task.title}"`);
+      return invalidateTasks();
+    },
     onError: (err) => toast.error(err.message || "Failed to update task"),
   });
 
