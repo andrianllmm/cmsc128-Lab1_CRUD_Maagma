@@ -24,7 +24,7 @@ export function useTasks(listId: string) {
     new Set(),
   );
 
-  const { data, isPending, error } = useQuery({
+  const { data, isPending, error, refetch } = useQuery({
     ...tasksQueryOptions(listId),
     // Hide pending deletes
     select: (tasks) => tasks.filter((t) => !pendingDeletes.has(t._id)),
@@ -37,14 +37,23 @@ export function useTasks(listId: string) {
 
   const createMutation = useMutation({
     mutationFn: (data: CreateTaskInput) => tasksApi.createTask(listId, data),
-    onSuccess: invalidateTasks,
+    onSuccess: (task) => {
+      // The new task may be hidden by filters, so say it was added
+      toast.success(`Added "${task.title}"`);
+      return invalidateTasks();
+    },
     onError: (err) => toast.error(err.message || "Failed to create task"),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateTaskInput }) =>
       tasksApi.updateTask(listId, id, data),
-    onSuccess: invalidateTasks,
+    onSuccess: (task, { data }) => {
+      // Checking a task off is already visible; other edits happen in a dialog that closes
+      const onlyToggledDone = Object.keys(data).join() === "done";
+      if (!onlyToggledDone) toast.success(`Saved "${task.title}"`);
+      return invalidateTasks();
+    },
     onError: (err) => toast.error(err.message || "Failed to update task"),
   });
 
@@ -134,6 +143,7 @@ export function useTasks(listId: string) {
     loading: isPending,
     // Keep showing cached tasks if only a background refetch failed
     error: data ? null : (error?.message ?? null),
+    retry: () => refetch(),
     createTask,
     updateTask,
     deleteTask,

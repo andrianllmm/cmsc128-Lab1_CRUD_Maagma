@@ -6,9 +6,11 @@ import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "@/types/users";
 import { Button } from "@/components/ui/button";
 import { PasswordInput } from "@/components/ui/password-input";
 import { FormField } from "@/components/ui/form-field";
+import { FormError } from "@/components/ui/form-error";
+import { useServerError } from "@/hooks/useServerError";
 
 interface ResetPasswordFormProps {
-  onSubmit: (data: ResetPasswordInput) => Promise<boolean>;
+  onSubmit: (data: ResetPasswordInput) => Promise<void>;
 }
 
 type ResetPasswordFormValues = z.input<typeof resetPasswordSchema>;
@@ -19,13 +21,15 @@ export function ResetPasswordForm({ onSubmit }: ResetPasswordFormProps) {
     confirmPassword: "",
   };
 
+  const server = useServerError(["newPassword", "confirmPassword"]);
+
   const form = useForm({
     defaultValues,
     validators: {
       onSubmit: resetPasswordSchema,
     },
     onSubmit: async ({ value }) => {
-      await onSubmit(resetPasswordSchema.parse(value));
+      await server.run(() => onSubmit(resetPasswordSchema.parse(value)));
     },
   });
 
@@ -38,12 +42,18 @@ export function ResetPasswordForm({ onSubmit }: ResetPasswordFormProps) {
       }}
       className="flex flex-col gap-4"
     >
+      {/* Errors from the API that aren't about one field, e.g. invalid credentials */}
+      <FormError message={server.formError} />
+
       <form.Field name="newPassword">
         {(field) => (
           <FormField
             htmlFor="new-password"
             label="New password"
-            error={field.state.meta.errors[0]?.message}
+            error={
+              field.state.meta.errors[0]?.message ??
+              server.fieldError(field.name)
+            }
           >
             <PasswordInput
               id="new-password"
@@ -67,7 +77,10 @@ export function ResetPasswordForm({ onSubmit }: ResetPasswordFormProps) {
           <FormField
             htmlFor="confirm-password"
             label="Confirm new password"
-            error={field.state.meta.errors[0]?.message}
+            error={
+              field.state.meta.errors[0]?.message ??
+              server.fieldError(field.name)
+            }
           >
             <PasswordInput
               id="confirm-password"

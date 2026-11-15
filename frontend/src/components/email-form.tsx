@@ -7,17 +7,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { FormField } from "@/components/ui/form-field";
+import { FormError } from "@/components/ui/form-error";
+import { useServerError } from "@/hooks/useServerError";
 import { UnsavedChangesGuard } from "@/components/unsaved-changes-guard";
 
 interface EmailFormProps {
   email: string;
-  onSubmit: (data: UpdateEmailInput) => Promise<boolean>;
+  onSubmit: (data: UpdateEmailInput) => Promise<void>;
 }
 
 type EmailFormValues = z.input<typeof updateEmailSchema>;
 
 export function EmailForm({ email, onSubmit }: EmailFormProps) {
   const defaultValues: EmailFormValues = { email, currentPassword: "" };
+
+  const server = useServerError(["email", "currentPassword"]);
 
   const form = useForm({
     defaultValues,
@@ -26,7 +30,7 @@ export function EmailForm({ email, onSubmit }: EmailFormProps) {
     },
     onSubmit: async ({ value }) => {
       const data = updateEmailSchema.parse(value);
-      if (await onSubmit(data)) {
+      if (await server.run(() => onSubmit(data))) {
         form.reset({
           // Keep the new email as the baseline
           email: data.email,
@@ -46,12 +50,18 @@ export function EmailForm({ email, onSubmit }: EmailFormProps) {
       }}
       className="flex flex-col gap-4"
     >
+      {/* Errors from the API that aren't about one field, e.g. invalid credentials */}
+      <FormError message={server.formError} />
+
       <form.Field name="email">
         {(field) => (
           <FormField
             htmlFor="email"
             label="Email"
-            error={field.state.meta.errors[0]?.message}
+            error={
+              field.state.meta.errors[0]?.message ??
+              server.fieldError(field.name)
+            }
           >
             <Input
               id="email"
@@ -71,7 +81,10 @@ export function EmailForm({ email, onSubmit }: EmailFormProps) {
           <FormField
             htmlFor="email-current-password"
             label="Current password"
-            error={field.state.meta.errors[0]?.message}
+            error={
+              field.state.meta.errors[0]?.message ??
+              server.fieldError(field.name)
+            }
           >
             <PasswordInput
               id="email-current-password"

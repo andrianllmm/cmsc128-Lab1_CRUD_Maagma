@@ -7,9 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { FormField } from "@/components/ui/form-field";
+import { FormError } from "@/components/ui/form-error";
+import { useServerError } from "@/hooks/useServerError";
 
 interface RegisterFormProps {
-  onSubmit: (data: RegisterInput) => Promise<boolean>;
+  onSubmit: (data: RegisterInput) => Promise<void>;
 }
 
 type RegisterFormValues = z.input<typeof registerSchema>;
@@ -21,13 +23,15 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
     password: "",
   };
 
+  const server = useServerError(["email", "displayName", "password"]);
+
   const form = useForm({
     defaultValues,
     validators: {
       onSubmit: registerSchema,
     },
     onSubmit: async ({ value }) => {
-      await onSubmit(registerSchema.parse(value));
+      await server.run(() => onSubmit(registerSchema.parse(value)));
     },
   });
 
@@ -40,13 +44,19 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
       }}
       className="flex flex-col gap-4"
     >
+      {/* Errors from the API that aren't about one field, e.g. invalid credentials */}
+      <FormError message={server.formError} />
+
       {/* Email */}
       <form.Field name="email">
         {(field) => (
           <FormField
             htmlFor="email"
             label="Email"
-            error={field.state.meta.errors[0]?.message}
+            error={
+              field.state.meta.errors[0]?.message ??
+              server.fieldError(field.name)
+            }
           >
             <Input
               id="email"
@@ -69,7 +79,10 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
           <FormField
             htmlFor="displayName"
             label="Display name"
-            error={field.state.meta.errors[0]?.message}
+            error={
+              field.state.meta.errors[0]?.message ??
+              server.fieldError(field.name)
+            }
           >
             <Input
               id="displayName"
@@ -90,7 +103,10 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
           <FormField
             htmlFor="password"
             label="Password"
-            error={field.state.meta.errors[0]?.message}
+            error={
+              field.state.meta.errors[0]?.message ??
+              server.fieldError(field.name)
+            }
           >
             <PasswordInput
               id="password"

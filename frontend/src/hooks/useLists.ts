@@ -27,10 +27,12 @@ export function useLists() {
   const createMutation = useMutation({
     mutationFn: listsApi.createList,
     // Added right away so the new list can be selected without a refetch
-    onSuccess: (list) =>
+    onSuccess: (list) => {
       queryClient.setQueryData(listsQueryOptions.queryKey, (lists) =>
         lists ? [...lists, list] : [list],
-      ),
+      );
+      toast.success(`Created "${list.name}"`);
+    },
     onError: (err) => toast.error(err.message || "Failed to create list"),
   });
 
@@ -44,25 +46,30 @@ export function useLists() {
       );
       toast.success(`Added ${data.email}`);
     },
-    onError: (err) => toast.error(err.message || "Failed to add member"),
   });
 
   const renameMutation = useMutation({
     mutationFn: ({ listId, data }: { listId: string; data: CreateListInput }) =>
       listsApi.renameList(listId, data),
-    onSuccess: (updated) =>
+    onSuccess: (updated) => {
       queryClient.setQueryData(listsQueryOptions.queryKey, (lists) =>
         lists?.map((l) => (l._id === updated._id ? updated : l)),
-      ),
+      );
+      toast.success(`Renamed to "${updated.name}"`);
+    },
     onError: (err) => toast.error(err.message || "Failed to rename list"),
   });
 
   const deleteMutation = useMutation({
     mutationFn: listsApi.deleteList,
     onSuccess: (_, listId) => {
+      const deleted = queryClient
+        .getQueryData(listsQueryOptions.queryKey)
+        ?.find((l) => l._id === listId);
       queryClient.setQueryData(listsQueryOptions.queryKey, (lists) =>
         lists?.filter((l) => l._id !== listId),
       );
+      if (deleted) toast.success(`Deleted "${deleted.name}"`);
       // Its tasks were deleted with it
       queryClient.removeQueries({ queryKey: ["tasks", listId] });
     },
@@ -83,18 +90,13 @@ export function useLists() {
 
   /**
    * Adds a user to a list by email. Only the list owner can.
-   * Returns `false` on failure (e.g. no user with that email).
+   * Throws the API error on failure (e.g. no user with that email), for the form to show.
    * */
   async function addMember(
     listId: string,
     data: AddMemberInput,
-  ): Promise<boolean> {
-    try {
-      await addMemberMutation.mutateAsync({ listId, data });
-      return true;
-    } catch {
-      return false;
-    }
+  ): Promise<void> {
+    await addMemberMutation.mutateAsync({ listId, data });
   }
 
   /**
