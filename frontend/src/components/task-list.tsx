@@ -1,6 +1,8 @@
+import { ListChecksIcon, SearchXIcon } from "lucide-react";
 import type { UpdateTaskInput } from "@/schemas/tasks";
 import type { Task } from "@/types/tasks";
 import { TaskItem } from "./task-item";
+import { Button } from "./ui/button";
 import { Skeleton } from "./ui/skeleton";
 
 interface TaskListProps {
@@ -8,6 +10,7 @@ interface TaskListProps {
   loading: boolean;
   error: string | null;
   hasActiveFilters: boolean;
+  onResetFilters: () => void;
   onEdit: (id: string, data: UpdateTaskInput) => Promise<boolean>;
   onDelete: (id: string) => Promise<boolean>;
   showCreator?: boolean;
@@ -18,6 +21,7 @@ export function TaskList({
   loading,
   error,
   hasActiveFilters,
+  onResetFilters,
   onEdit,
   onDelete,
   showCreator,
@@ -31,7 +35,12 @@ export function TaskList({
   }
 
   if (tasks.length === 0) {
-    return <TaskListEmpty hasActiveFilters={hasActiveFilters} />;
+    return (
+      <TaskListEmpty
+        hasActiveFilters={hasActiveFilters}
+        onResetFilters={onResetFilters}
+      />
+    );
   }
 
   return (
@@ -62,10 +71,33 @@ function TaskListSkeleton({ count = 10 }: { count?: number }) {
   );
 }
 
-function TaskListEmpty({ hasActiveFilters }: { hasActiveFilters: boolean }) {
+interface TaskListEmptyProps {
+  hasActiveFilters: boolean;
+  onResetFilters: () => void;
+}
+
+// Says why the list is empty and what to do next, instead of a bare "No tasks"
+function TaskListEmpty({
+  hasActiveFilters,
+  onResetFilters,
+}: TaskListEmptyProps) {
+  const Icon = hasActiveFilters ? SearchXIcon : ListChecksIcon;
+
   return (
-    <div className="text-center">
-      {hasActiveFilters ? "No tasks match your filters" : "No tasks"}
+    <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed px-6 py-10 text-center">
+      <Icon className="size-6 text-muted-foreground" aria-hidden />
+      <p className="font-medium">
+        {hasActiveFilters ? "No tasks match your filters" : "No tasks yet"}
+      </p>
+      {hasActiveFilters ? (
+        <Button variant="outline" size="sm" onClick={onResetFilters}>
+          Clear filters
+        </Button>
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          Add one with the form above.
+        </p>
+      )}
     </div>
   );
 }

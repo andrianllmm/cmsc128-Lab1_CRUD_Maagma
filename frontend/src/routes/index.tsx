@@ -120,6 +120,7 @@ function TasksPage() {
           loading={loading}
           error={error}
           hasActiveFilters={hasActiveFilters}
+          onResetFilters={resetFilters}
           onEdit={updateTask}
           onDelete={deleteTask}
           showCreator={!list.personal}
