@@ -3,8 +3,8 @@ name: CI
 on:
   push:
     branches: [main, act2-accounts, act3-ubac, act4-refactor]
+  # Every PR, including ones stacked on other feature branches
   pull_request:
-    branches: [main, act2-accounts, act3-ubac, act4-refactor]
 
 jobs:
   check:
