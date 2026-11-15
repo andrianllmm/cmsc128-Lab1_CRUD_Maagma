@@ -15,7 +15,10 @@ import { userRouter } from "./modules/users/users.router.js";
 
 export const app: Express = express();
 
-app.use(morgan(env.NODE_ENV === "production" ? "tiny" : "dev"));
+// Request logs would clutter test output
+if (env.NODE_ENV !== "test") {
+  app.use(morgan(env.NODE_ENV === "production" ? "tiny" : "dev"));
+}
 // Allow the frontend to send the session cookie
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
 app.use(express.json());
