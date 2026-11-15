@@ -24,7 +24,7 @@ export function useTasks(listId: string) {
     new Set(),
   );
 
-  const { data, isPending, error } = useQuery({
+  const { data, isPending, error, refetch } = useQuery({
     ...tasksQueryOptions(listId),
     // Hide pending deletes
     select: (tasks) => tasks.filter((t) => !pendingDeletes.has(t._id)),
@@ -143,6 +143,7 @@ export function useTasks(listId: string) {
     loading: isPending,
     // Keep showing cached tasks if only a background refetch failed
     error: data ? null : (error?.message ?? null),
+    retry: () => refetch(),
     createTask,
     updateTask,
     deleteTask,

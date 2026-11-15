@@ -50,7 +50,7 @@ function TasksPage() {
   async function handleDeleteList() {
     if (await deleteList(listId)) navigate({ search: {} });
   }
-  const { tasks, loading, error, createTask, updateTask, deleteTask } =
+  const { tasks, loading, error, retry, createTask, updateTask, deleteTask } =
     useTasks(listId);
   const {
     visibleTasks,
@@ -121,6 +121,7 @@ function TasksPage() {
           error={error}
           hasActiveFilters={hasActiveFilters}
           onResetFilters={resetFilters}
+          onRetry={retry}
           onEdit={updateTask}
           onDelete={deleteTask}
           showCreator={!list.personal}

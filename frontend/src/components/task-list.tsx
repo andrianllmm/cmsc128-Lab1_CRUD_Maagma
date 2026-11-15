@@ -1,4 +1,4 @@
-import { ListChecksIcon, SearchXIcon } from "lucide-react";
+import { ListChecksIcon, SearchXIcon, TriangleAlertIcon } from "lucide-react";
 import type { UpdateTaskInput } from "@/schemas/tasks";
 import type { Task } from "@/types/tasks";
 import { TaskItem } from "./task-item";
@@ -11,6 +11,7 @@ interface TaskListProps {
   error: string | null;
   hasActiveFilters: boolean;
   onResetFilters: () => void;
+  onRetry: () => void;
   onEdit: (id: string, data: UpdateTaskInput) => Promise<boolean>;
   onDelete: (id: string) => Promise<boolean>;
   showCreator?: boolean;
@@ -22,6 +23,7 @@ export function TaskList({
   error,
   hasActiveFilters,
   onResetFilters,
+  onRetry,
   onEdit,
   onDelete,
   showCreator,
@@ -31,7 +33,7 @@ export function TaskList({
   }
 
   if (error) {
-    return <TaskListError message={error} />;
+    return <TaskListError message={error} onRetry={onRetry} />;
   }
 
   if (tasks.length === 0) {
@@ -102,6 +104,23 @@ function TaskListEmpty({
   );
 }
 
-function TaskListError({ message }: { message: string }) {
-  return <div className="text-center text-destructive">{message}</div>;
+interface TaskListErrorProps {
+  message: string;
+  onRetry: () => void;
+}
+
+function TaskListError({ message, onRetry }: TaskListErrorProps) {
+  return (
+    <div
+      role="alert"
+      className="flex flex-col items-center gap-2 rounded-xl border border-dashed px-6 py-10 text-center"
+    >
+      <TriangleAlertIcon className="size-6 text-destructive" aria-hidden />
+      <p className="font-medium">Couldn&apos;t load tasks</p>
+      <p className="text-sm text-muted-foreground">{message}</p>
+      <Button variant="outline" size="sm" onClick={onRetry}>
+        Try again
+      </Button>
+    </div>
+  );
 }
