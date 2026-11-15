@@ -80,7 +80,11 @@ export function DateTimePicker({
           </Button>
         }
       />
-      <PopoverContent className="w-auto p-0" align="start">
+      {/* Scrolls instead of running off small screens */}
+      <PopoverContent
+        className="max-h-(--available-height) w-auto overflow-y-auto p-0"
+        align="start"
+      >
         <div className="sm:flex">
           <Calendar
             mode="single"
