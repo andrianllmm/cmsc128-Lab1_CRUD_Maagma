@@ -111,6 +111,10 @@ const updateResetToken = async (
   });
 };
 
+const deleteUser = async (id: string): Promise<void> => {
+  await UserModel.findByIdAndDelete(id);
+};
+
 export const userService = {
   findById,
   findByIdWithPassword,
@@ -123,4 +127,5 @@ export const userService = {
   updateEmail,
   updatePasswordHash,
   updateResetToken,
+  deleteUser,
 };

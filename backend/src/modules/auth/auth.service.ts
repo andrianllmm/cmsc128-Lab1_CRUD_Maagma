@@ -23,7 +23,13 @@ const register = async (data: RegisterInput): Promise<UserDocument | null> => {
   });
   if (!user) return null;
 
-  await listService.createPersonalList(user.id);
+  try {
+    await listService.createPersonalList(user.id);
+  } catch (err) {
+    // Every user needs a personal list, so undo the signup instead of keeping a broken account
+    await userService.deleteUser(user.id);
+    throw err;
+  }
   return user;
 };
 

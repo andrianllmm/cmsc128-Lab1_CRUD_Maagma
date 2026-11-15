@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
-import { after, before, describe, it } from "node:test";
+import { after, before, describe, it, mock } from "node:test";
 import type { Express } from "express";
 import request from "supertest";
 import { startTestApp, stopTestApp } from "./setup.js";
+import { listService } from "../modules/lists/lists.service.js";
 import { UserModel } from "../modules/users/users.model.js";
 
 let app: Express;
@@ -34,5 +35,21 @@ describe("registration", () => {
       await UserModel.countDocuments({ email: "race@example.com" }),
       1,
     );
+  });
+
+  it("undoes the signup if the personal list can't be created", async () => {
+    const failing = mock.method(listService, "createPersonalList", async () => {
+      throw new Error("Database unavailable");
+    });
+
+    try {
+      await signup("broken@example.com").expect(500);
+    } finally {
+      failing.mock.restore();
+    }
+
+    assert.equal(await UserModel.exists({ email: "broken@example.com" }), null);
+    // The email isn't left taken
+    await signup("broken@example.com").expect(201);
   });
 });
