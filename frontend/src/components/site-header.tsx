@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { ListTodoIcon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -30,20 +30,26 @@ export function SiteHeader() {
 
 function HeaderActions() {
   const { user, loading } = useAuth();
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  });
 
   // Placeholder the size of the avatar while the user loads
   if (loading) return <Skeleton className="size-8 rounded-full" />;
 
   if (user) return <UserMenu user={user} />;
 
+  // On the login page, offer the other way in instead of a link to the same page
+  const onLogin = pathname === "/login";
+
   return (
     <Button
       variant="outline"
       size="sm"
-      render={<Link to="/login" />}
+      render={<Link to={onLogin ? "/register" : "/login"} />}
       nativeButton={false}
     >
-      Log in
+      {onLogin ? "Create account" : "Log in"}
     </Button>
   );
 }
