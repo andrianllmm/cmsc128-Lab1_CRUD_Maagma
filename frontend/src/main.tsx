@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ThemeProvider } from "next-themes";
 import { routeTree } from "./routeTree.gen";
+import { PagePending } from "./components/page-pending";
 import "./index.css";
 
 const queryClient = new QueryClient();
@@ -14,6 +15,9 @@ const router = createRouter({
   context: { queryClient },
   defaultPreload: "intent",
   scrollRestoration: true,
+  // Shown if a page takes a moment to load; quick loads skip it to avoid a flash
+  defaultPendingComponent: PagePending,
+  defaultPendingMs: 300,
 });
 
 // Register the router for type safety
