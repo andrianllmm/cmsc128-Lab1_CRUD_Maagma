@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { env } from "./env.js";
+import { logger } from "../lib/logger.js";
 
 export async function connectDB() {
   mongoose.set("strictQuery", true);
@@ -8,5 +9,5 @@ export async function connectDB() {
     maxPoolSize: 10,
   });
 
-  console.log("MongoDB connected");
+  logger.info("MongoDB connected");
 }

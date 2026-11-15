@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
+import { logger } from "../lib/logger.js";
 
 interface HttpError extends Error {
   status?: number;
@@ -20,7 +21,7 @@ export const errorHandler = (
   const status = err.status ?? 500;
 
   if (status >= 500) {
-    console.error(err);
+    logger.error(err);
   }
 
   // Only expose client-safe messages (e.g. malformed JSON body)

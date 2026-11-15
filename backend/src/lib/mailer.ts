@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { env } from "../config/env.js";
+import { logger } from "./logger.js";
 
 /**
  * SMTP connection, or `null` when SMTP isn't configured.
@@ -25,7 +26,7 @@ export const sendMail = async (
   text: string,
 ): Promise<void> => {
   if (!transporter) {
-    console.log(`To: ${to}\nSubject: ${subject}\n\n${text}`);
+    logger.info(`To: ${to}\nSubject: ${subject}\n\n${text}`);
     return;
   }
 

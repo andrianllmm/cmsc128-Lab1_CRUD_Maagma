@@ -8,6 +8,7 @@ import { RESET_TOKEN_TTL_MS } from "../users/users.constants.js";
 import { userService } from "../users/users.service.js";
 import { listService } from "../lists/lists.service.js";
 import type { RegisterInput, LoginInput } from "./auth.schema.js";
+import { logger } from "../../lib/logger.js";
 
 /**
  * Creates an account with its personal list.
@@ -109,7 +110,7 @@ const forgotPassword = async (email: string): Promise<boolean> => {
     user.email,
     "Reset your password",
     `Reset your password using this link (expires in ${RESET_TOKEN_TTL_MS / 60000} minutes):\n\n${link}\n\nIf you didn't request this, you can ignore this email.`,
-  ).catch((err) => console.error("Failed to send reset email:", err));
+  ).catch((err) => logger.error("Failed to send reset email:", err));
 
   return true;
 };
