@@ -3,8 +3,8 @@ name: CI
 on:
   push:
     branches: [main, act2-accounts, act3-ubac, act4-refactor]
+  # Every PR, including ones stacked on other feature branches
   pull_request:
-    branches: [main, act2-accounts, act3-ubac, act4-refactor]
 
 jobs:
   check:
@@ -30,3 +30,15 @@ jobs:
       - run: pnpm --filter backend test
 
       - run: pnpm --filter frontend build
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history, so secrets in old commits are caught too
+          fetch-depth: 0
+
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

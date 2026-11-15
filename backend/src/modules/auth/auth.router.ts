@@ -2,6 +2,10 @@ import { Router } from "express";
 
 import { authController } from "./auth.controller.js";
 import { requireAuth } from "../../middleware/auth.js";
+import {
+  emailLimiter,
+  failedAuthLimiter,
+} from "../../middleware/rate-limit.js";
 import { validateBody } from "../../middleware/validate.js";
 import {
   forgotPasswordSchema,
@@ -41,9 +45,12 @@ export const authRouter: Router = Router();
  *        description: Invalid registration data
  *      409:
  *        description: Email already in use
+ *      429:
+ *        description: Too many attempts
  */
 authRouter.post(
   "/register",
+  failedAuthLimiter,
   validateBody(registerSchema),
   authController.register,
 );
@@ -75,8 +82,15 @@ authRouter.post(
  *        description: Invalid login data
  *      401:
  *        description: Invalid credentials
+ *      429:
+ *        description: Too many attempts
  */
-authRouter.post("/login", validateBody(loginSchema), authController.login);
+authRouter.post(
+  "/login",
+  failedAuthLimiter,
+  validateBody(loginSchema),
+  authController.login,
+);
 
 /**
  * @openapi
@@ -127,9 +141,12 @@ authRouter.get("/me", requireAuth, authController.me);
  *        description: Reset link sent if the account exists
  *      400:
  *        description: Invalid email
+ *      429:
+ *        description: Too many attempts
  */
 authRouter.post(
   "/forgot-password",
+  emailLimiter,
   validateBody(forgotPasswordSchema),
   authController.forgotPassword,
 );
@@ -158,9 +175,12 @@ authRouter.post(
  *        description: Password reset
  *      400:
  *        description: Invalid data, or the reset token is invalid or expired
+ *      429:
+ *        description: Too many attempts
  */
 authRouter.post(
   "/reset-password",
+  failedAuthLimiter,
   validateBody(resetPasswordSchema),
   authController.resetPassword,
 );
