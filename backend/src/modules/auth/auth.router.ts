@@ -2,6 +2,10 @@ import { Router } from "express";
 
 import { authController } from "./auth.controller.js";
 import { requireAuth } from "../../middleware/auth.js";
+import {
+  emailLimiter,
+  failedAuthLimiter,
+} from "../../middleware/rate-limit.js";
 import { validateBody } from "../../middleware/validate.js";
 import {
   forgotPasswordSchema,
@@ -44,6 +48,7 @@ export const authRouter: Router = Router();
  */
 authRouter.post(
   "/register",
+  failedAuthLimiter,
   validateBody(registerSchema),
   authController.register,
 );
@@ -76,7 +81,12 @@ authRouter.post(
  *      401:
  *        description: Invalid credentials
  */
-authRouter.post("/login", validateBody(loginSchema), authController.login);
+authRouter.post(
+  "/login",
+  failedAuthLimiter,
+  validateBody(loginSchema),
+  authController.login,
+);
 
 /**
  * @openapi
@@ -130,6 +140,7 @@ authRouter.get("/me", requireAuth, authController.me);
  */
 authRouter.post(
   "/forgot-password",
+  emailLimiter,
   validateBody(forgotPasswordSchema),
   authController.forgotPassword,
 );
@@ -161,6 +172,7 @@ authRouter.post(
  */
 authRouter.post(
   "/reset-password",
+  failedAuthLimiter,
   validateBody(resetPasswordSchema),
   authController.resetPassword,
 );

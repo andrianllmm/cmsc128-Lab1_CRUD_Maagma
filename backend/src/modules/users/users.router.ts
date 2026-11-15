@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import { userController } from "./users.controller.js";
 import { requireAuth } from "../../middleware/auth.js";
+import { failedAuthLimiter } from "../../middleware/rate-limit.js";
 import { validateBody } from "../../middleware/validate.js";
 import {
   updateEmailSchema,
@@ -75,6 +76,7 @@ userRouter.patch(
  */
 userRouter.patch(
   "/me/email",
+  failedAuthLimiter,
   validateBody(updateEmailSchema),
   userController.updateEmail,
 );
@@ -109,6 +111,7 @@ userRouter.patch(
  */
 userRouter.patch(
   "/me/password",
+  failedAuthLimiter,
   validateBody(updatePasswordSchema),
   userController.updatePassword,
 );
