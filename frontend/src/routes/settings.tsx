@@ -7,8 +7,10 @@ import { Separator } from "@/components/ui/separator";
 import { DisplayNameForm } from "@/components/display-name-form";
 import { EmailForm } from "@/components/email-form";
 import { PasswordForm } from "@/components/password-form";
+import { pageHead } from "@/lib/title";
 
 export const Route = createFileRoute("/settings")({
+  head: pageHead("Settings"),
   beforeLoad: requireAuth,
   component: SettingsPage,
 });

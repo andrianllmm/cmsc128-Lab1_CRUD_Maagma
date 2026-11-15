@@ -1,4 +1,8 @@
-import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
+import {
+  HeadContent,
+  Outlet,
+  createRootRouteWithContext,
+} from "@tanstack/react-router";
 import type { QueryClient } from "@tanstack/react-query";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { SiteHeader } from "@/components/site-header";
@@ -16,6 +20,8 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 function RootLayout() {
   return (
     <div className="flex min-h-svh flex-col bg-background">
+      {/* Applies each route's `head`, e.g. the page title */}
+      <HeadContent />
       <SiteHeader />
       {/* Fills the space below the header */}
       <main className="flex flex-1 flex-col">

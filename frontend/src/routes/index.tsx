@@ -12,8 +12,10 @@ import { useTaskView } from "@/hooks/useTaskView";
 import { requireAuth } from "@/lib/auth";
 import type { CreateListInput } from "@/schemas/lists";
 import type { Task } from "@/types/tasks";
+import { pageHead } from "@/lib/title";
 
 export const Route = createFileRoute("/")({
+  head: pageHead("Tasks"),
   // The selected list, kept in the URL so it survives refreshes
   validateSearch: (search): { list?: string } => ({
     list: typeof search.list === "string" ? search.list : undefined,

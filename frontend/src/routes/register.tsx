@@ -3,8 +3,10 @@ import { RegisterForm } from "@/components/register-form";
 import { useAuth } from "@/hooks/useAuth";
 import { requireGuest } from "@/lib/auth";
 import type { RegisterInput } from "@/schemas/auth";
+import { pageHead } from "@/lib/title";
 
 export const Route = createFileRoute("/register")({
+  head: pageHead("Create account"),
   beforeLoad: requireGuest,
   component: RegisterPage,
 });

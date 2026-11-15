@@ -3,8 +3,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { requireGuest } from "@/lib/auth";
 import type { LoginInput } from "@/schemas/auth";
 import { LoginForm } from "@/components/login-form";
+import { pageHead } from "@/lib/title";
 
 export const Route = createFileRoute("/login")({
+  head: pageHead("Log in"),
   beforeLoad: requireGuest,
   component: LoginPage,
 });

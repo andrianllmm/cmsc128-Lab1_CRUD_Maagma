@@ -4,8 +4,10 @@ import { Loader2Icon, LogOutIcon, PencilIcon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { requireAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
+import { pageHead } from "@/lib/title";
 
 export const Route = createFileRoute("/profile")({
+  head: pageHead("Profile"),
   beforeLoad: requireAuth,
   component: ProfilePage,
 });
