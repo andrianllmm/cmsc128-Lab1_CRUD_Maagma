@@ -30,6 +30,19 @@ describe("security headers", () => {
 });
 
 describe("query injection", () => {
+  it("rejects operator objects in filters instead of running them", async () => {
+    await registerUser(app, "victim");
+
+    // Would match any user if passed through as a query operator
+    const injected = { $ne: null } as unknown as string;
+    await assert.rejects(userService.findByEmail(injected), {
+      name: "CastError",
+    });
+    await assert.rejects(userService.findByValidResetToken(injected), {
+      name: "CastError",
+    });
+  });
+
   it("rejects operator objects in request bodies", async () => {
     await request(app)
       .post("/api/auth/login")

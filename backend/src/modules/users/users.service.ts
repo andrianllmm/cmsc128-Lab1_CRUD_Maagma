@@ -1,4 +1,4 @@
-import { mongo } from "mongoose";
+import mongoose, { mongo } from "mongoose";
 import { UserModel, type UserDocument } from "./users.model.js";
 
 const DUPLICATE_KEY_ERROR = 11000;
@@ -44,7 +44,7 @@ const findByValidResetToken = async (
 ): Promise<UserDocument | null> => {
   return UserModel.findOne({
     resetTokenHash,
-    resetTokenExpiresAt: { $gt: new Date() },
+    resetTokenExpiresAt: mongoose.trusted({ $gt: new Date() }),
   });
 };
 
