@@ -9,10 +9,17 @@ const SERVER_ERROR_MESSAGE = "Something went wrong on our end. Try again.";
  * */
 export class ApiError extends Error {
   status: number;
+  // Per-field messages from the API's validation, e.g. `{ currentPassword: ["..."] }`
+  fieldErrors: Record<string, string[]>;
 
-  constructor(status: number, message: string) {
+  constructor(
+    status: number,
+    message: string,
+    fieldErrors: Record<string, string[]> = {},
+  ) {
     super(message);
     this.status = status;
+    this.fieldErrors = fieldErrors;
   }
 }
 
@@ -46,7 +53,9 @@ export async function apiFetch<T>(
     const body = await res.json().catch(() => null);
     const message =
       typeof body?.message === "string" ? body.message : res.statusText;
-    throw new ApiError(res.status, message);
+    const fieldErrors =
+      body?.errors && typeof body.errors === "object" ? body.errors : {};
+    throw new ApiError(res.status, message, fieldErrors);
   }
 
   // No body to parse
