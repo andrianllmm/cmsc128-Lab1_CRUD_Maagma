@@ -33,7 +33,7 @@ const getLists = async (userId: string) => {
  * Finds a list the user can access, with only the fields access checks need.
  * Returns `null` if it doesn't exist or the user isn't its owner or a member.
  * */
-const getListById = async (
+const findAccessibleList = async (
   userId: string,
   id: string,
 ): Promise<ListAccess | null> => {
@@ -90,7 +90,7 @@ const deleteList = async (listId: Types.ObjectId): Promise<void> => {
 
 export const listService = {
   getLists,
-  getListById,
+  findAccessibleList,
   createList,
   createPersonalList,
   addMember,
