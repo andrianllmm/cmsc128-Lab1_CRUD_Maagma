@@ -78,7 +78,11 @@ const renameList = async (listId: Types.ObjectId, name: string) => {
     .lean();
 };
 
-// Deletes the list along with its tasks
+/**
+ * Deletes the list along with its tasks.
+ * Tasks go first: if this fails partway, the list still exists, so deleting it
+ * again finishes the job instead of leaving tasks no one can reach.
+ * */
 const deleteList = async (listId: Types.ObjectId): Promise<void> => {
   await TaskModel.deleteMany({ list: listId });
   await ListModel.findByIdAndDelete(listId);
