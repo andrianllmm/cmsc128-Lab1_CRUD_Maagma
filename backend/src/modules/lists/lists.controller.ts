@@ -29,7 +29,7 @@ const addMember = async (
   // Set by `requireListAccess`, checked by `requireListOwner`
   const list: ListAccess = res.locals.list;
 
-  const member = await userService.findByEmail(req.body.email);
+  const member = await userService.findIdByEmail(req.body.email);
   if (!member) {
     return res.status(404).json({ message: "No user with that email" });
   }

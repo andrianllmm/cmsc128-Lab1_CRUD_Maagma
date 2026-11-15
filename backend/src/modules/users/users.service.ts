@@ -30,6 +30,11 @@ const findByEmail = async (email: string): Promise<UserDocument | null> => {
   return UserModel.findOne({ email });
 };
 
+// Only the ID, for when the rest of the user isn't needed
+const findIdByEmail = async (email: string) => {
+  return UserModel.exists({ email });
+};
+
 const findByEmailWithPassword = async (email: string) => {
   return UserModel.findOne({ email }).select("+passwordHash");
 };
@@ -110,6 +115,7 @@ export const userService = {
   findById,
   findByIdWithPassword,
   findByEmail,
+  findIdByEmail,
   findByEmailWithPassword,
   findByValidResetToken,
   createUser,
