@@ -27,4 +27,6 @@ jobs:
 
       - run: pnpm --filter backend typecheck
 
+      - run: pnpm --filter backend test
+
       - run: pnpm --filter frontend build
