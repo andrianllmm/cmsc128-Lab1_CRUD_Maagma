@@ -51,6 +51,16 @@ export const sessionMiddleware: RequestHandler = session({
 });
 
 /**
+ * Indexes sessions by user, so logging out a user's sessions doesn't scan every session.
+ * The store only creates its own TTL index.
+ * */
+export const createSessionIndexes = async (): Promise<void> => {
+  await mongoose.connection
+    .collection(SESSIONS_COLLECTION)
+    .createIndex({ "session.userId": 1 });
+};
+
+/**
  * Deletes a user's sessions from the store, logging them out.
  * `exceptSessionId` keeps that session (e.g. the current one) logged in.
  * */
