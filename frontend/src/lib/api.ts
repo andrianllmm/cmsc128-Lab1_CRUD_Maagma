@@ -24,6 +24,8 @@ export async function apiFetch<T>(
 
   const res = await fetch(url, {
     headers: { "Content-Type": "application/json" },
+    // Send the session cookie to the API
+    credentials: "include",
     ...options,
   });
 
@@ -33,6 +35,9 @@ export async function apiFetch<T>(
       typeof body?.message === "string" ? body.message : res.statusText;
     throw new ApiError(res.status, message);
   }
+
+  // No body to parse
+  if (res.status === 204) return undefined as T;
 
   return res.json();
 }
