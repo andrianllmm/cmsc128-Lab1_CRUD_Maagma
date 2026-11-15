@@ -1,8 +1,6 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
@@ -13,8 +11,6 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix"
   },
-  "keywords": [],
-  "author": "",
   "license": "ISC",
   "devEngines": {
     "packageManager": {
