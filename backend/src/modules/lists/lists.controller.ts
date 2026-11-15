@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 
 import { listService } from "./lists.service.js";
 import { userService } from "../users/users.service.js";
-import type { ListDocument } from "./lists.model.js";
+import type { ListAccess } from "./lists.model.js";
 import type {
   AddMemberInput,
   CreateListInput,
@@ -27,7 +27,7 @@ const addMember = async (
   res: Response,
 ) => {
   // Set by `requireListAccess`, checked by `requireListOwner`
-  const list: ListDocument = res.locals.list;
+  const list: ListAccess = res.locals.list;
 
   const member = await userService.findByEmail(req.body.email);
   if (!member) {
@@ -41,7 +41,7 @@ const addMember = async (
     return res.status(409).json({ message: "Already in this list" });
   }
 
-  const updated = await listService.addMember(list.id, member.id);
+  const updated = await listService.addMember(list._id, member._id);
   res.json(updated);
 };
 
@@ -50,17 +50,17 @@ const renameList = async (
   res: Response,
 ) => {
   // Set by `requireListAccess`, checked by `requireListOwner`
-  const list: ListDocument = res.locals.list;
+  const list: ListAccess = res.locals.list;
 
-  const updated = await listService.renameList(list.id, req.body.name);
+  const updated = await listService.renameList(list._id, req.body.name);
   res.json(updated);
 };
 
 const deleteList = async (req: Request<ListIdInput>, res: Response) => {
   // Set by `requireListAccess`, checked by `requireListOwner`
-  const list: ListDocument = res.locals.list;
+  const list: ListAccess = res.locals.list;
 
-  await listService.deleteList(list.id);
+  await listService.deleteList(list._id);
   res.status(204).end();
 };
 

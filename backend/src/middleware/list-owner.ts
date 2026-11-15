@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import type { ListDocument } from "../modules/lists/lists.model.js";
+import type { ListAccess } from "../modules/lists/lists.model.js";
 
 // Each owner-only action, as it reads in "Personal lists can't be ..."
 const PAST_TENSE = {
@@ -16,7 +16,7 @@ type ListAction = keyof typeof PAST_TENSE;
  * */
 export const requireListOwner =
   (action: ListAction) => (req: Request, res: Response, next: NextFunction) => {
-    const list: ListDocument = res.locals.list;
+    const list: ListAccess = res.locals.list;
 
     // Members can see the list but only the owner can change it
     if (!list.owner.equals(req.session.userId!)) {

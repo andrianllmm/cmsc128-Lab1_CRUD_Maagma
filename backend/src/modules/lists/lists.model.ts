@@ -3,6 +3,7 @@ import {
   model,
   type HydratedDocument,
   type InferSchemaType,
+  type Types,
 } from "mongoose";
 import { LIST_NAME_MAX_LENGTH } from "./lists.constants.js";
 
@@ -43,4 +44,8 @@ listSchema.index(
 
 export type List = InferSchemaType<typeof listSchema>;
 export type ListDocument = HydratedDocument<List>;
+// The fields access and ownership checks need
+export type ListAccess = Pick<List, "owner" | "members" | "personal"> & {
+  _id: Types.ObjectId;
+};
 export const ListModel = model("List", listSchema);
