@@ -30,6 +30,8 @@ const userSchema = new Schema(
     resetTokenHash: {
       type: String,
       select: false,
+      // Looked up on password reset; sparse since most users have no token
+      index: { sparse: true },
     },
     resetTokenExpiresAt: {
       type: Date,
