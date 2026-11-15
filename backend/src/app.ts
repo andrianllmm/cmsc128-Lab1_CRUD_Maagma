@@ -1,5 +1,6 @@
 import cors from "cors";
 import express, { type Express } from "express";
+import helmet from "helmet";
 import mongoose from "mongoose";
 import morgan from "morgan";
 import swaggerUi from "swagger-ui-express";
@@ -14,6 +15,9 @@ import { taskRouter } from "./modules/tasks/tasks.router.js";
 import { userRouter } from "./modules/users/users.router.js";
 
 export const app: Express = express();
+
+// Standard security headers (no sniffing, no framing, CSP, HSTS) and no `X-Powered-By`
+app.use(helmet());
 
 // Request logs would clutter test output
 if (env.NODE_ENV !== "test") {
