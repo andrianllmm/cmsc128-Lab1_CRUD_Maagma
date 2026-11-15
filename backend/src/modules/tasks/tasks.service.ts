@@ -8,7 +8,10 @@ import type { CreateTaskInput, UpdateTaskInput } from "./tasks.schema.js";
 const withOwner = { path: "owner", select: "displayName" };
 
 const getTasks = async (listId: string): Promise<Task[]> => {
-  return TaskModel.find({ list: listId }).populate(withOwner);
+  // Oldest first, so the default order is stable
+  return TaskModel.find({ list: listId })
+    .sort({ createdAt: 1 })
+    .populate(withOwner);
 };
 
 const getTaskById = async (
