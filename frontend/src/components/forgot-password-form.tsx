@@ -5,9 +5,11 @@ import { forgotPasswordSchema, type ForgotPasswordInput } from "@/schemas/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
+import { FormError } from "@/components/ui/form-error";
+import { useServerError } from "@/hooks/useServerError";
 
 interface ForgotPasswordFormProps {
-  onSubmit: (data: ForgotPasswordInput) => Promise<boolean>;
+  onSubmit: (data: ForgotPasswordInput) => Promise<void>;
 }
 
 type ForgotPasswordFormValues = z.input<typeof forgotPasswordSchema>;
@@ -17,13 +19,15 @@ export function ForgotPasswordForm({ onSubmit }: ForgotPasswordFormProps) {
     email: "",
   };
 
+  const server = useServerError(["email"]);
+
   const form = useForm({
     defaultValues,
     validators: {
       onSubmit: forgotPasswordSchema,
     },
     onSubmit: async ({ value }) => {
-      await onSubmit(forgotPasswordSchema.parse(value));
+      await server.run(() => onSubmit(forgotPasswordSchema.parse(value)));
     },
   });
 
@@ -36,13 +40,19 @@ export function ForgotPasswordForm({ onSubmit }: ForgotPasswordFormProps) {
       }}
       className="flex flex-col gap-4"
     >
+      {/* Errors from the API that aren't about one field, e.g. invalid credentials */}
+      <FormError message={server.formError} />
+
       {/* Email */}
       <form.Field name="email">
         {(field) => (
           <FormField
             htmlFor="email"
             label="Email"
-            error={field.state.meta.errors[0]?.message}
+            error={
+              field.state.meta.errors[0]?.message ??
+              server.fieldError(field.name)
+            }
           >
             <Input
               id="email"

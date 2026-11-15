@@ -24,10 +24,9 @@ function ResetPasswordPage() {
   const navigate = useNavigate();
 
   async function handleResetPassword(data: ResetPasswordInput) {
-    const ok = await resetPassword(token!, data);
+    await resetPassword(token!, data);
     // Replace so going back doesn't return to a used reset link
-    if (ok) navigate({ to: "/login", replace: true });
-    return ok;
+    navigate({ to: "/login", replace: true });
   }
 
   return (

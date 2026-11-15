@@ -19,9 +19,8 @@ function ForgotPasswordPage() {
   const [sentTo, setSentTo] = useState<string | null>(null);
 
   async function handleForgotPassword(data: ForgotPasswordInput) {
-    const ok = await forgotPassword(data);
-    if (ok) setSentTo(data.email);
-    return ok;
+    await forgotPassword(data);
+    setSentTo(data.email);
   }
 
   return (

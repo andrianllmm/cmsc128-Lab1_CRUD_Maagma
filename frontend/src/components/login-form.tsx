@@ -8,9 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { FormField } from "@/components/ui/form-field";
+import { FormError } from "@/components/ui/form-error";
+import { useServerError } from "@/hooks/useServerError";
 
 interface LoginFormProps {
-  onSubmit: (data: LoginInput) => Promise<boolean>;
+  onSubmit: (data: LoginInput) => Promise<void>;
 }
 
 type LoginFormValues = z.input<typeof loginSchema>;
@@ -21,13 +23,15 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
     password: "",
   };
 
+  const server = useServerError(["email", "password"]);
+
   const form = useForm({
     defaultValues,
     validators: {
       onSubmit: loginSchema,
     },
     onSubmit: async ({ value }) => {
-      await onSubmit(loginSchema.parse(value));
+      await server.run(() => onSubmit(loginSchema.parse(value)));
     },
   });
 
@@ -40,13 +44,19 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
       }}
       className="flex flex-col gap-4"
     >
+      {/* Errors from the API that aren't about one field, e.g. invalid credentials */}
+      <FormError message={server.formError} />
+
       {/* Email */}
       <form.Field name="email">
         {(field) => (
           <FormField
             htmlFor="email"
             label="Email"
-            error={field.state.meta.errors[0]?.message}
+            error={
+              field.state.meta.errors[0]?.message ??
+              server.fieldError(field.name)
+            }
           >
             <Input
               id="email"
@@ -69,7 +79,10 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
           <FormField
             htmlFor="password"
             label="Password"
-            error={field.state.meta.errors[0]?.message}
+            error={
+              field.state.meta.errors[0]?.message ??
+              server.fieldError(field.name)
+            }
           >
             <PasswordInput
               id="password"

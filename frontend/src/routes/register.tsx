@@ -16,9 +16,9 @@ function RegisterPage() {
   const navigate = useNavigate();
 
   async function handleRegister(data: RegisterInput) {
-    const ok = await register(data);
-    if (ok) navigate({ to: "/", replace: true });
-    return ok;
+    // Errors propagate to the form, which shows them
+    await register(data);
+    navigate({ to: "/", replace: true });
   }
 
   return (

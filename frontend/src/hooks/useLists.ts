@@ -46,7 +46,6 @@ export function useLists() {
       );
       toast.success(`Added ${data.email}`);
     },
-    onError: (err) => toast.error(err.message || "Failed to add member"),
   });
 
   const renameMutation = useMutation({
@@ -91,18 +90,13 @@ export function useLists() {
 
   /**
    * Adds a user to a list by email. Only the list owner can.
-   * Returns `false` on failure (e.g. no user with that email).
+   * Throws the API error on failure (e.g. no user with that email), for the form to show.
    * */
   async function addMember(
     listId: string,
     data: AddMemberInput,
-  ): Promise<boolean> {
-    try {
-      await addMemberMutation.mutateAsync({ listId, data });
-      return true;
-    } catch {
-      return false;
-    }
+  ): Promise<void> {
+    await addMemberMutation.mutateAsync({ listId, data });
   }
 
   /**

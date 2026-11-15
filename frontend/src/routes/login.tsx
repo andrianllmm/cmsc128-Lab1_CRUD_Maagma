@@ -16,9 +16,9 @@ function LoginPage() {
   const navigate = useNavigate();
 
   async function handleLogin(data: LoginInput) {
-    const ok = await login(data);
-    if (ok) navigate({ to: "/", replace: true });
-    return ok;
+    // Errors propagate to the form, which shows them
+    await login(data);
+    navigate({ to: "/", replace: true });
   }
 
   return (

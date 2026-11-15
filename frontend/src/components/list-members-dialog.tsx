@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
+import { useServerError } from "@/hooks/useServerError";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +20,7 @@ import {
 interface ListMembersDialogProps {
   list: List;
   isOwner: boolean;
-  onAddMember: (data: AddMemberInput) => Promise<boolean>;
+  onAddMember: (data: AddMemberInput) => Promise<void>;
 }
 
 export function ListMembersDialog({
@@ -84,9 +85,11 @@ type AddMemberFormValues = z.input<typeof addMemberSchema>;
 function AddMemberForm({
   onSubmit,
 }: {
-  onSubmit: (data: AddMemberInput) => Promise<boolean>;
+  onSubmit: (data: AddMemberInput) => Promise<void>;
 }) {
   const defaultValues: AddMemberFormValues = { email: "" };
+
+  const server = useServerError(["email"]);
 
   const form = useForm({
     defaultValues,
@@ -95,7 +98,7 @@ function AddMemberForm({
     },
     onSubmit: async ({ value }) => {
       const data = addMemberSchema.parse(value);
-      if (await onSubmit(data)) form.reset();
+      if (await server.run(() => onSubmit(data))) form.reset();
     },
   });
 
@@ -113,7 +116,12 @@ function AddMemberForm({
           <FormField
             htmlFor="memberEmail"
             label="Add member by email"
-            error={field.state.meta.errors[0]?.message}
+            error={
+              field.state.meta.errors[0]?.message ??
+              server.fieldError(field.name) ??
+              server.formError ??
+              undefined
+            }
             className="flex-1"
           >
             <Input
