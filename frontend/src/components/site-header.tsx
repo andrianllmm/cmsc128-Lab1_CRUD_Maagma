@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { ListTodoIcon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UserMenu } from "@/components/user-menu";
 
@@ -11,15 +11,17 @@ export function SiteHeader() {
       <div className="mx-auto flex h-12 max-w-xl items-center justify-between gap-2 px-4 sm:px-6">
         {/* App title */}
         <h1>
-          <Button
-            variant="ghost"
-            className="-ml-2.5 text-base font-semibold"
-            render={<Link to="/" />}
-            nativeButton={false}
+          {/* Styled like a button, but it navigates, so it's a link for screen readers */}
+          <Link
+            to="/"
+            className={buttonVariants({
+              variant: "ghost",
+              className: "-ml-2.5 text-base font-semibold",
+            })}
           >
-            <ListTodoIcon />
+            <ListTodoIcon aria-hidden />
             TODO
-          </Button>
+          </Link>
         </h1>
 
         <HeaderActions />
@@ -43,13 +45,11 @@ function HeaderActions() {
   const onLogin = pathname === "/login";
 
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      render={<Link to={onLogin ? "/register" : "/login"} />}
-      nativeButton={false}
+    <Link
+      to={onLogin ? "/register" : "/login"}
+      className={buttonVariants({ variant: "outline", size: "sm" })}
     >
       {onLogin ? "Create account" : "Log in"}
-    </Button>
+    </Link>
   );
 }
