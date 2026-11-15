@@ -5,6 +5,7 @@ import {
 } from "@tanstack/react-router";
 import type { QueryClient } from "@tanstack/react-query";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { NotFoundPage } from "@/components/not-found-page";
 import { SiteHeader } from "@/components/site-header";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -15,6 +16,8 @@ interface RouterContext {
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootLayout,
+  // Rendered inside the layout, so the header stays for navigation
+  notFoundComponent: NotFoundPage,
 });
 
 function RootLayout() {
