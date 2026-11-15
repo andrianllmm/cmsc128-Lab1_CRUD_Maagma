@@ -26,19 +26,8 @@ const addMember = async (
   req: Request<ListIdInput, unknown, AddMemberInput>,
   res: Response,
 ) => {
-  // Set by `requireListAccess`
+  // Set by `requireListAccess`, checked by `requireListOwner`
   const list: ListDocument = res.locals.list;
-
-  // Members can see the list but only the owner can share it
-  if (!list.owner.equals(req.session.userId!)) {
-    return res
-      .status(403)
-      .json({ message: "Only the list owner can add members" });
-  }
-
-  if (list.personal) {
-    return res.status(400).json({ message: "Personal lists can't be shared" });
-  }
 
   const member = await userService.findByEmail(req.body.email);
   if (!member) {
@@ -60,36 +49,16 @@ const renameList = async (
   req: Request<ListIdInput, unknown, CreateListInput>,
   res: Response,
 ) => {
-  // Set by `requireListAccess`
+  // Set by `requireListAccess`, checked by `requireListOwner`
   const list: ListDocument = res.locals.list;
-
-  if (!list.owner.equals(req.session.userId!)) {
-    return res
-      .status(403)
-      .json({ message: "Only the list owner can rename it" });
-  }
-
-  if (list.personal) {
-    return res.status(400).json({ message: "Personal lists can't be renamed" });
-  }
 
   const updated = await listService.renameList(list.id, req.body.name);
   res.json(updated);
 };
 
 const deleteList = async (req: Request<ListIdInput>, res: Response) => {
-  // Set by `requireListAccess`
+  // Set by `requireListAccess`, checked by `requireListOwner`
   const list: ListDocument = res.locals.list;
-
-  if (!list.owner.equals(req.session.userId!)) {
-    return res
-      .status(403)
-      .json({ message: "Only the list owner can delete it" });
-  }
-
-  if (list.personal) {
-    return res.status(400).json({ message: "Personal lists can't be deleted" });
-  }
 
   await listService.deleteList(list.id);
   res.status(204).end();
