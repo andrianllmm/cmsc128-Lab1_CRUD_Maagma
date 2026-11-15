@@ -35,6 +35,12 @@ const listSchema = new Schema(
   { timestamps: true },
 );
 
+// One personal list per user; collaborative lists are unlimited
+listSchema.index(
+  { owner: 1, personal: 1 },
+  { unique: true, partialFilterExpression: { personal: true } },
+);
+
 export type List = InferSchemaType<typeof listSchema>;
 export type ListDocument = HydratedDocument<List>;
 export const ListModel = model("List", listSchema);
