@@ -58,7 +58,7 @@ const createUser = async (
   try {
     return await UserModel.create(data);
   } catch (err) {
-    // Unique index catches concurrent signups that passed `findByEmail`
+    // Unique index rejects emails that are already taken
     if (isDuplicateKeyError(err)) return null;
     throw err;
   }

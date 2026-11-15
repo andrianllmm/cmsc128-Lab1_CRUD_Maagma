@@ -14,10 +14,8 @@ import type { RegisterInput, LoginInput } from "./auth.schema.js";
  * Returns `null` if the email is already taken.
  * */
 const register = async (data: RegisterInput): Promise<UserDocument | null> => {
-  const existing = await userService.findByEmail(data.email);
-  if (existing) return null;
-
   const hashedPassword = await hashPassword(data.password);
+  // The unique email index rejects taken emails, so there's no separate lookup first
   const user = await userService.createUser({
     email: data.email,
     displayName: data.displayName,
