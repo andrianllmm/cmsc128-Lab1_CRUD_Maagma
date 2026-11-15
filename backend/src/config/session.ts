@@ -27,7 +27,12 @@ export const sessionMiddleware: RequestHandler = session({
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
-    mongoUrl: env.MONGODB_URI,
+    // Reuses Mongoose's connection instead of opening a second pool
+    clientPromise: new Promise((resolve) =>
+      mongoose.connection.once("open", () =>
+        resolve(mongoose.connection.getClient()),
+      ),
+    ),
     collectionName: SESSIONS_COLLECTION,
     // Stored as objects instead of JSON strings, so sessions can be queried by `userId`
     stringify: false,
