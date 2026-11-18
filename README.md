@@ -63,11 +63,13 @@ Server-side sessions can be revoked immediately (on logout or password change), 
 ├── backend/
 │   └── src/
 │       ├── config/          # env, db connection, sessions, swagger setup
-│       ├── lib/             # password hashing, email sending
-│       ├── middleware/      # request validation, auth guard, list access check, errors
+│       ├── lib/             # logger, password hashing, email sending
+│       ├── middleware/      # validation, auth guard, list access/owner checks, rate limits, errors
 │       ├── modules/         # feature modules: auth, users, lists, tasks (model, schema, controller, service, router)
 │       ├── scripts/         # demo task seeder
-│       └── server.ts        # Express app entry point
+│       ├── test/            # integration tests (UBAC, auth, security, rate limits)
+│       ├── app.ts           # Express app (middleware and routes)
+│       └── server.ts        # entry point: connects the DB, starts the server
 ├── frontend/
 │   └── src/
 │       ├── api/             # HTTP calls to the backend
@@ -311,6 +313,61 @@ IDOR examples:
 | `GET /api/lists/<Bob's list>/tasks`                  | 404    |
 | `PATCH /api/lists/<Alice's list>/tasks/<Bob's task>` | 404    |
 | `POST /api/lists/<Bob's list Alice is in>/members`   | 403    |
+
+## Activity 4: Refactor
+
+All work is on `act4-refactor`, merged through PRs #112, #117, and #125.
+
+### Backend Optimization
+
+| Change                                        | Before                                              | After                                              | Why                                                |
+| --------------------------------------------- | --------------------------------------------------- | -------------------------------------------------- | -------------------------------------------------- |
+| Compound index `{ list, createdAt }` on tasks | Separate `list` and `owner` indexes, sort in memory | One index serves the filter and the sort           | Every task query filters by list and sorts by date |
+| Index on `session.userId`                     | Logging out a user's sessions scanned every session | Indexed lookup                                     | Runs on every password change/reset                |
+| Sparse index on `resetTokenHash`              | Collection scan on password reset                   | Indexed lookup, only users with a token            | Most users have no token                           |
+| Register: drop the "email taken?" lookup      | `findByEmail` then `create` (2 queries)             | `create` only; the unique index rejects duplicates | 1 round-trip, and no race between two signups      |
+| Add member: fetch only the ID                 | Full user document                                  | `UserModel.exists({ email })`                      | Only the ID is stored in `members`                 |
+| `.lean()` on list and task reads              | Full Mongoose documents                             | Plain objects                                      | Less memory and CPU on read-only routes            |
+| Session store reuses Mongoose's connection    | Two connection pools                                | One                                                | Fewer open connections to the DB                   |
+
+Tasks store only `owner` and `list` IDs, and the creator's name comes from `populate`. User data isn't copied into each task.
+
+### Data Integrity
+
+- **One Personal list per user:** a partial unique index on `{ owner, personal }`.
+- **Signup rollback:** if creating the Personal list fails, the new user is deleted.
+
+### Code
+
+- `app.ts` (Express setup) is separate from `server.ts` (startup), so tests can import the app without starting a server.
+- Owner-only checks moved from controllers into the `requireListOwner` middleware.
+- Renames for clarity (e.g. `getListById` → `findAccessibleList`), removed unused types, and logs now go through `lib/logger.ts`.
+- `console.log` is used only in the seed script, which is a command-line tool.
+
+### UBAC Kept Intact
+
+- Integration tests in `backend/src/test/ubac.test.ts` cover the IDOR cases (other users' lists, tasks, and owner actions).
+- CI runs lint, format check, typecheck, tests, and the frontend build on every PR (`.github/workflows/ci.yml`).
+
+### Security
+
+| Measure                                                | Protects against                                     |
+| ------------------------------------------------------ | ---------------------------------------------------- |
+| `helmet` security headers                              | Clickjacking, MIME sniffing, missing CSP/HSTS        |
+| Rate limits on login, reset, and password/email routes | Password guessing, email spam                        |
+| `mongoose.set("sanitizeFilter", true)`                 | NoSQL injection (e.g. `{ "$ne": null }` as a value)  |
+| `.env` files gitignored, secret scan in CI             | Leaked credentials                                   |
+| `trust proxy` in production                            | `secure` cookies and rate limits behind a host proxy |
+
+### UX/UI (HCI Heuristics)
+
+| Heuristic                   | Changes                                                                                                       |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Visibility of system status | Loading states, progress on list delete, success toasts, page titles in tabs                                  |
+| Error recovery              | Inline form errors from the API, a friendly error page with retry, task retry, "server unreachable" message   |
+| No dead ends                | 404 page, empty-state hints, a sign-up link on the login page                                                 |
+| Accessibility               | Higher contrast for badges, errors, and checkboxes; skip-to-content link; navigation buttons exposed as links |
+| Responsive                  | Tall dialogs scroll and the date picker stays on screen on phones                                             |
 
 ## Merging Activities 1 and 2
 

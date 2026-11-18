@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 
 import { listService } from "./lists.service.js";
 import { userService } from "../users/users.service.js";
-import type { ListDocument } from "./lists.model.js";
+import type { ListAccess } from "./lists.model.js";
 import type {
   AddMemberInput,
   CreateListInput,
@@ -26,21 +26,10 @@ const addMember = async (
   req: Request<ListIdInput, unknown, AddMemberInput>,
   res: Response,
 ) => {
-  // Set by `requireListAccess`
-  const list: ListDocument = res.locals.list;
+  // Set by `requireListAccess`, checked by `requireListOwner`
+  const list: ListAccess = res.locals.list;
 
-  // Members can see the list but only the owner can share it
-  if (!list.owner.equals(req.session.userId!)) {
-    return res
-      .status(403)
-      .json({ message: "Only the list owner can add members" });
-  }
-
-  if (list.personal) {
-    return res.status(400).json({ message: "Personal lists can't be shared" });
-  }
-
-  const member = await userService.findByEmail(req.body.email);
+  const member = await userService.findIdByEmail(req.body.email);
   if (!member) {
     return res.status(404).json({ message: "No user with that email" });
   }
@@ -52,7 +41,7 @@ const addMember = async (
     return res.status(409).json({ message: "Already in this list" });
   }
 
-  const updated = await listService.addMember(list.id, member.id);
+  const updated = await listService.addMember(list._id, member._id);
   res.json(updated);
 };
 
@@ -60,38 +49,18 @@ const renameList = async (
   req: Request<ListIdInput, unknown, CreateListInput>,
   res: Response,
 ) => {
-  // Set by `requireListAccess`
-  const list: ListDocument = res.locals.list;
+  // Set by `requireListAccess`, checked by `requireListOwner`
+  const list: ListAccess = res.locals.list;
 
-  if (!list.owner.equals(req.session.userId!)) {
-    return res
-      .status(403)
-      .json({ message: "Only the list owner can rename it" });
-  }
-
-  if (list.personal) {
-    return res.status(400).json({ message: "Personal lists can't be renamed" });
-  }
-
-  const updated = await listService.renameList(list.id, req.body.name);
+  const updated = await listService.renameList(list._id, req.body.name);
   res.json(updated);
 };
 
 const deleteList = async (req: Request<ListIdInput>, res: Response) => {
-  // Set by `requireListAccess`
-  const list: ListDocument = res.locals.list;
+  // Set by `requireListAccess`, checked by `requireListOwner`
+  const list: ListAccess = res.locals.list;
 
-  if (!list.owner.equals(req.session.userId!)) {
-    return res
-      .status(403)
-      .json({ message: "Only the list owner can delete it" });
-  }
-
-  if (list.personal) {
-    return res.status(400).json({ message: "Personal lists can't be deleted" });
-  }
-
-  await listService.deleteList(list.id);
+  await listService.deleteList(list._id);
   res.status(204).end();
 };
 

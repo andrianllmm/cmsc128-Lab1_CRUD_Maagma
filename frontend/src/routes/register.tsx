@@ -3,8 +3,10 @@ import { RegisterForm } from "@/components/register-form";
 import { useAuth } from "@/hooks/useAuth";
 import { requireGuest } from "@/lib/auth";
 import type { RegisterInput } from "@/schemas/auth";
+import { pageHead } from "@/lib/title";
 
 export const Route = createFileRoute("/register")({
+  head: pageHead("Create account"),
   beforeLoad: requireGuest,
   component: RegisterPage,
 });
@@ -14,9 +16,9 @@ function RegisterPage() {
   const navigate = useNavigate();
 
   async function handleRegister(data: RegisterInput) {
-    const ok = await register(data);
-    if (ok) navigate({ to: "/", replace: true });
-    return ok;
+    // Errors propagate to the form, which shows them
+    await register(data);
+    navigate({ to: "/", replace: true });
   }
 
   return (

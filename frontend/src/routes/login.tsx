@@ -3,8 +3,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { requireGuest } from "@/lib/auth";
 import type { LoginInput } from "@/schemas/auth";
 import { LoginForm } from "@/components/login-form";
+import { pageHead } from "@/lib/title";
 
 export const Route = createFileRoute("/login")({
+  head: pageHead("Log in"),
   beforeLoad: requireGuest,
   component: LoginPage,
 });
@@ -14,9 +16,9 @@ function LoginPage() {
   const navigate = useNavigate();
 
   async function handleLogin(data: LoginInput) {
-    const ok = await login(data);
-    if (ok) navigate({ to: "/", replace: true });
-    return ok;
+    // Errors propagate to the form, which shows them
+    await login(data);
+    navigate({ to: "/", replace: true });
   }
 
   return (

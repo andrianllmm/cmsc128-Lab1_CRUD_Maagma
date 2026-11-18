@@ -5,8 +5,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { requireGuest } from "@/lib/auth";
 import type { ForgotPasswordInput } from "@/schemas/auth";
 import { RESET_LINK_TTL_MINUTES } from "@/types/users";
+import { pageHead } from "@/lib/title";
 
 export const Route = createFileRoute("/forgot-password")({
+  head: pageHead("Forgot password"),
   beforeLoad: requireGuest,
   component: ForgotPasswordPage,
 });
@@ -17,9 +19,8 @@ function ForgotPasswordPage() {
   const [sentTo, setSentTo] = useState<string | null>(null);
 
   async function handleForgotPassword(data: ForgotPasswordInput) {
-    const ok = await forgotPassword(data);
-    if (ok) setSentTo(data.email);
-    return ok;
+    await forgotPassword(data);
+    setSentTo(data.email);
   }
 
   return (

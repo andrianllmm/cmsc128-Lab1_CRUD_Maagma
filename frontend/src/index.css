@@ -90,7 +90,8 @@
   --muted-foreground: oklch(0.44 0 0);
   --accent: oklch(0.94 0 0);
   --accent-foreground: oklch(0 0 0);
-  --destructive: oklch(0.63 0.19 23.03);
+  /* Dark enough for 4.5:1 contrast on white (overdue dates, error text) */
+  --destructive: oklch(0.55 0.2 25);
   --border: oklch(0.92 0 0);
   --input: oklch(0.94 0 0);
   --ring: oklch(0 0 0);

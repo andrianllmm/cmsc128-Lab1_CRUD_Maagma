@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { EllipsisIcon, PencilIcon, TrashIcon } from "lucide-react";
+import { EllipsisIcon, Loader2Icon, PencilIcon, TrashIcon } from "lucide-react";
 import type { CreateListInput } from "@/schemas/lists";
 import type { List } from "@/types/lists";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,7 @@ import {
 interface ListActionsMenuProps {
   list: List;
   onRename: (data: CreateListInput) => Promise<boolean>;
-  onDelete: () => void;
+  onDelete: () => Promise<unknown>;
 }
 
 /**
@@ -43,6 +43,14 @@ export function ListActionsMenu({
 }: ListActionsMenuProps) {
   const [renaming, setRenaming] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  // Keeps the confirmation open and disabled until the delete finishes
+  const [deletePending, setDeletePending] = useState(false);
+
+  async function handleDelete() {
+    setDeletePending(true);
+    await onDelete();
+    setDeletePending(false);
+  }
 
   return (
     <>
@@ -106,8 +114,15 @@ export function ListActionsMenu({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" onClick={onDelete}>
+            <AlertDialogCancel disabled={deletePending}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deletePending}
+            >
+              {deletePending && <Loader2Icon className="animate-spin" />}
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

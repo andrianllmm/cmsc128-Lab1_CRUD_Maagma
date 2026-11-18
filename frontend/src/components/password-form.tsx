@@ -9,10 +9,12 @@ import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "@/types/users";
 import { Button } from "@/components/ui/button";
 import { PasswordInput } from "@/components/ui/password-input";
 import { FormField } from "@/components/ui/form-field";
+import { FormError } from "@/components/ui/form-error";
+import { useServerError } from "@/hooks/useServerError";
 import { UnsavedChangesGuard } from "@/components/unsaved-changes-guard";
 
 interface PasswordFormProps {
-  onSubmit: (data: UpdatePasswordInput) => Promise<boolean>;
+  onSubmit: (data: UpdatePasswordInput) => Promise<void>;
 }
 
 type PasswordFormValues = z.input<typeof updatePasswordSchema>;
@@ -24,6 +26,12 @@ export function PasswordForm({ onSubmit }: PasswordFormProps) {
     confirmPassword: "",
   };
 
+  const server = useServerError([
+    "currentPassword",
+    "newPassword",
+    "confirmPassword",
+  ]);
+
   const form = useForm({
     defaultValues,
     validators: {
@@ -31,7 +39,8 @@ export function PasswordForm({ onSubmit }: PasswordFormProps) {
     },
     onSubmit: async ({ value }) => {
       // Don't leave passwords on screen
-      if (await onSubmit(updatePasswordSchema.parse(value))) form.reset();
+      if (await server.run(() => onSubmit(updatePasswordSchema.parse(value))))
+        form.reset();
     },
   });
 
@@ -44,12 +53,18 @@ export function PasswordForm({ onSubmit }: PasswordFormProps) {
       }}
       className="flex flex-col gap-4"
     >
+      {/* Errors from the API that aren't about one field, e.g. invalid credentials */}
+      <FormError message={server.formError} />
+
       <form.Field name="currentPassword">
         {(field) => (
           <FormField
             htmlFor="current-password"
             label="Current password"
-            error={field.state.meta.errors[0]?.message}
+            error={
+              field.state.meta.errors[0]?.message ??
+              server.fieldError(field.name)
+            }
           >
             <PasswordInput
               id="current-password"
@@ -68,7 +83,10 @@ export function PasswordForm({ onSubmit }: PasswordFormProps) {
           <FormField
             htmlFor="new-password"
             label="New password"
-            error={field.state.meta.errors[0]?.message}
+            error={
+              field.state.meta.errors[0]?.message ??
+              server.fieldError(field.name)
+            }
           >
             <PasswordInput
               id="new-password"
@@ -91,7 +109,10 @@ export function PasswordForm({ onSubmit }: PasswordFormProps) {
           <FormField
             htmlFor="confirm-password"
             label="Confirm new password"
-            error={field.state.meta.errors[0]?.message}
+            error={
+              field.state.meta.errors[0]?.message ??
+              server.fieldError(field.name)
+            }
           >
             <PasswordInput
               id="confirm-password"

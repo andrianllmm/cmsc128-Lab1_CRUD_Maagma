@@ -1,1 +1,6 @@
 node_modules
+
+# Env files hold secrets; only the examples are committed
+.env
+.env.*
+!.env.example

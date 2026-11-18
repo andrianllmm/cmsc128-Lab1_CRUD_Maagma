@@ -4,6 +4,7 @@ import { ResetPasswordForm } from "@/components/reset-password-form";
 import { useAuth } from "@/hooks/useAuth";
 import { requireGuest } from "@/lib/auth";
 import type { ResetPasswordInput } from "@/schemas/auth";
+import { pageHead } from "@/lib/title";
 
 // The token comes from the emailed link, e.g. `/reset-password?token=...`
 const searchSchema = z.object({
@@ -11,6 +12,7 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/reset-password")({
+  head: pageHead("Reset password"),
   validateSearch: searchSchema,
   beforeLoad: requireGuest,
   component: ResetPasswordPage,
@@ -22,10 +24,9 @@ function ResetPasswordPage() {
   const navigate = useNavigate();
 
   async function handleResetPassword(data: ResetPasswordInput) {
-    const ok = await resetPassword(token!, data);
+    await resetPassword(token!, data);
     // Replace so going back doesn't return to a used reset link
-    if (ok) navigate({ to: "/login", replace: true });
-    return ok;
+    navigate({ to: "/login", replace: true });
   }
 
   return (

@@ -12,8 +12,10 @@ import { useTaskView } from "@/hooks/useTaskView";
 import { requireAuth } from "@/lib/auth";
 import type { CreateListInput } from "@/schemas/lists";
 import type { Task } from "@/types/tasks";
+import { pageHead } from "@/lib/title";
 
 export const Route = createFileRoute("/")({
+  head: pageHead("Tasks"),
   // The selected list, kept in the URL so it survives refreshes
   validateSearch: (search): { list?: string } => ({
     list: typeof search.list === "string" ? search.list : undefined,
@@ -48,7 +50,7 @@ function TasksPage() {
   async function handleDeleteList() {
     if (await deleteList(listId)) navigate({ search: {} });
   }
-  const { tasks, loading, error, createTask, updateTask, deleteTask } =
+  const { tasks, loading, error, retry, createTask, updateTask, deleteTask } =
     useTasks(listId);
   const {
     visibleTasks,
@@ -118,6 +120,8 @@ function TasksPage() {
           loading={loading}
           error={error}
           hasActiveFilters={hasActiveFilters}
+          onResetFilters={resetFilters}
+          onRetry={retry}
           onEdit={updateTask}
           onDelete={deleteTask}
           showCreator={!list.personal}

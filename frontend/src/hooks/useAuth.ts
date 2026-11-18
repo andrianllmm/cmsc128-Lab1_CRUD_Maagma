@@ -40,13 +40,11 @@ export function useAuth() {
   const registerMutation = useMutation({
     mutationFn: authApi.register,
     onSuccess: setUser,
-    onError: (err) => toast.error(err.message || "Failed to create account"),
   });
 
   const loginMutation = useMutation({
     mutationFn: authApi.login,
     onSuccess: setUser,
-    onError: (err) => toast.error(err.message || "Failed to log in"),
   });
 
   const logoutMutation = useMutation({
@@ -57,7 +55,6 @@ export function useAuth() {
 
   const forgotPasswordMutation = useMutation({
     mutationFn: authApi.forgotPassword,
-    onError: (err) => toast.error(err.message || "Failed to send reset link"),
   });
 
   const resetPasswordMutation = useMutation({
@@ -70,33 +67,22 @@ export function useAuth() {
     }) => authApi.resetPassword(token, data),
     onSuccess: () =>
       toast.success("Password reset. Log in with your new password."),
-    onError: (err) => toast.error(err.message || "Failed to reset password"),
   });
 
   /**
    * Creates an account and logs in.
-   * Returns `false` on failure (e.g. email already in use).
+   * Throws the API error on failure, for the form to show.
    * */
-  async function register(data: RegisterInput): Promise<boolean> {
-    try {
-      await registerMutation.mutateAsync(data);
-      return true;
-    } catch {
-      return false;
-    }
+  async function register(data: RegisterInput): Promise<void> {
+    await registerMutation.mutateAsync(data);
   }
 
   /**
    * Logs in a user.
-   * Returns `false` on failure (e.g. invalid credentials).
+   * Throws the API error on failure, for the form to show.
    * */
-  async function login(data: LoginInput): Promise<boolean> {
-    try {
-      await loginMutation.mutateAsync(data);
-      return true;
-    } catch {
-      return false;
-    }
+  async function login(data: LoginInput): Promise<void> {
+    await loginMutation.mutateAsync(data);
   }
 
   /**
@@ -116,31 +102,21 @@ export function useAuth() {
 
   /**
    * Requests a password reset link for an email.
-   * Returns `false` on failure (e.g. network error), not when the email is unknown.
+   * Throws the API error on failure, for the form to show.
    * */
-  async function forgotPassword(data: ForgotPasswordInput): Promise<boolean> {
-    try {
-      await forgotPasswordMutation.mutateAsync(data);
-      return true;
-    } catch {
-      return false;
-    }
+  async function forgotPassword(data: ForgotPasswordInput): Promise<void> {
+    await forgotPasswordMutation.mutateAsync(data);
   }
 
   /**
    * Sets a new password using a reset token.
-   * Returns `false` on failure (e.g. invalid or expired token).
+   * Throws the API error on failure, for the form to show.
    * */
   async function resetPassword(
     token: string,
     data: ResetPasswordInput,
-  ): Promise<boolean> {
-    try {
-      await resetPasswordMutation.mutateAsync({ token, data });
-      return true;
-    } catch {
-      return false;
-    }
+  ): Promise<void> {
+    await resetPasswordMutation.mutateAsync({ token, data });
   }
 
   return {

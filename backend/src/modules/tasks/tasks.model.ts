@@ -8,14 +8,12 @@ const taskSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "List",
       required: true,
-      index: true,
     },
     // The user who created the task
     owner: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      index: true,
     },
     title: {
       type: String,
@@ -42,6 +40,9 @@ const taskSchema = new Schema(
   },
   { timestamps: true },
 );
+
+// Every task query filters by list; the sort comes from the index instead of memory
+taskSchema.index({ list: 1, createdAt: 1 });
 
 export type Task = InferSchemaType<typeof taskSchema>;
 export const TaskModel = model("Task", taskSchema);

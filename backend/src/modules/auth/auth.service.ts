@@ -8,16 +8,15 @@ import { RESET_TOKEN_TTL_MS } from "../users/users.constants.js";
 import { userService } from "../users/users.service.js";
 import { listService } from "../lists/lists.service.js";
 import type { RegisterInput, LoginInput } from "./auth.schema.js";
+import { logger } from "../../lib/logger.js";
 
 /**
  * Creates an account with its personal list.
  * Returns `null` if the email is already taken.
  * */
 const register = async (data: RegisterInput): Promise<UserDocument | null> => {
-  const existing = await userService.findByEmail(data.email);
-  if (existing) return null;
-
   const hashedPassword = await hashPassword(data.password);
+  // The unique email index rejects taken emails, so there's no separate lookup first
   const user = await userService.createUser({
     email: data.email,
     displayName: data.displayName,
@@ -25,7 +24,13 @@ const register = async (data: RegisterInput): Promise<UserDocument | null> => {
   });
   if (!user) return null;
 
-  await listService.createPersonalList(user.id);
+  try {
+    await listService.createPersonalList(user.id);
+  } catch (err) {
+    // Every user needs a personal list, so undo the signup instead of keeping a broken account
+    await userService.deleteUser(user.id);
+    throw err;
+  }
   return user;
 };
 
@@ -105,7 +110,7 @@ const forgotPassword = async (email: string): Promise<boolean> => {
     user.email,
     "Reset your password",
     `Reset your password using this link (expires in ${RESET_TOKEN_TTL_MS / 60000} minutes):\n\n${link}\n\nIf you didn't request this, you can ignore this email.`,
-  ).catch((err) => console.error("Failed to send reset email:", err));
+  ).catch((err) => logger.error("Failed to send reset email:", err));
 
   return true;
 };
