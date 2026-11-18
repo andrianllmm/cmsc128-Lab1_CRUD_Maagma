@@ -147,6 +147,71 @@ pnpm seed alice@example.com bob@example.com
 - API docs (Swagger UI): http://localhost:3000/api-docs
 - Frontend: http://localhost:5173
 
+## Deployment
+
+### Access
+
+**Live app: https://todo128.onrender.com**
+
+Open it in any browser, on any device or network. Nothing to install. The app keeps running when my laptop is off.
+
+The free tier sleeps after 15 minutes without traffic, so the first visit after a while can take about a minute to load.
+
+### Setup
+
+| Part        | Service                                    |
+| ----------- | ------------------------------------------ |
+| App + API   | Render free web service (Node, Oregon)     |
+| Database    | MongoDB Atlas free M0 cluster              |
+| Email       | SMTP provider on port 2525 (e.g. Brevo)    |
+| Auto-deploy | Every push to `main` redeploys from GitHub |
+
+One Render service runs both. The backend serves the built frontend, so the app and API share one origin (`/api/...`). This means no CORS, and the `sameSite` session cookie just works.
+
+Build command:
+
+```
+pnpm install --frozen-lockfile --prod=false && pnpm --filter frontend build && pnpm --filter backend build
+```
+
+Start command:
+
+```
+pnpm --filter backend start
+```
+
+### Secrets
+
+No secrets are in the repo: `.env` files are gitignored and CI scans for leaked secrets. In production they're set as environment variables in the Render dashboard:
+
+| Variable                              | Value                                    |
+| ------------------------------------- | ---------------------------------------- |
+| `NODE_ENV`                            | `production`                             |
+| `MONGODB_URI`                         | Atlas connection string                  |
+| `SESSION_SECRET`                      | random 32-byte hex                       |
+| `APP_URL`, `CORS_ORIGIN`              | `https://todo128.onrender.com`           |
+| `SMTP_HOST`, `SMTP_PORT`              | provider host, `2525`                    |
+| `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` | provider login, key, and verified sender |
+
+`VITE_API_URL` is left unset, so the frontend calls the relative `/api/`. `PORT` is set by Render.
+
+### Platform Notes
+
+- **Atlas network access:** Atlas rejects connections from IPs not on its access list. Render's outbound IPs must be added there (Render dashboard → Connect → Outbound), or `0.0.0.0/0`.
+- **SMTP ports:** Render's free tier blocks outbound ports 25, 465, and 587, so email uses a provider that accepts port 2525.
+- **HTTPS:** Render terminates TLS at its proxy, so the backend sets `trust proxy` to see requests as HTTPS (needed for the `secure` cookie and per-client rate limits).
+
+### Request Flow
+
+1. The browser requests `https://todo128.onrender.com/api/lists` over HTTPS.
+2. Render's proxy terminates TLS and forwards the request to the Express server.
+3. Express reads the session cookie and loads the session from MongoDB Atlas.
+4. The route checks list access, queries Atlas, and returns JSON back through the proxy.
+
+### Minimum vs Expanded
+
+A tunnel (e.g. ngrok) only exposes my laptop's `localhost`: it stops when the laptop or tunnel closes. Render hosts the app on its own servers with a permanent URL, which meets the expanded tier.
+
 ## Data Model
 
 Users, lists, and tasks are separate collections linked by ObjectId.
